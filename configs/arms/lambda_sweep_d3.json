@@ -1,0 +1,62 @@
+[
+ {
+  "name": "current_lam0.25_d3",
+  "delta": 1.5,
+  "lam": 0.25,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "current_lam0.5_d3",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "current_lam1.0_d3",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "predictor_lam0.25_d3",
+  "delta": 1.5,
+  "lam": 0.25,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "predictor_lam0.5_d3",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "predictor_lam1.0_d3",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ }
+]

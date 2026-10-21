@@ -1,0 +1,82 @@
+{
+ "description": "Table 1: our watermark against DLM-KGW and dgMARK on WaterBench-600 with LLaDA-8B-Instruct (low-confidence order).",
+ "vars": {
+  "PY": "python",
+  "PY_EVAL": "python",
+  "BANDS": "checkpoints/bands.pt",
+  "PREDICTOR": "checkpoints/predictor.pt",
+  "P": "--prompts data/waterbench600_llada.jsonl --prompt-ids data/waterbench600_ids.json",
+  "KGW_REPO": "external/diffusion-lm-watermark",
+  "DGM_REPO": "external/dgmark-watermarking"
+ },
+ "steps": [
+  {
+   "name": "{c}",
+   "for": {
+    "c": [
+     "ours_d3_d4",
+     "ours_d2_d5"
+    ]
+   },
+   "cmd": "{PY} scripts/generate.py --arms configs/arms/{c}.json --partition {BANDS} --predictor {PREDICTOR} {P} --out runs/{c}"
+  },
+  {
+   "name": "dlm_kgw_d{d}",
+   "for": {
+    "d": [
+     0,
+     2,
+     3,
+     4,
+     5
+    ]
+   },
+   "cmd": "{PY} scripts/baselines/run_dlm_kgw.py --official-repo {KGW_REPO} {P} --delta {d} --out runs/dlm_kgw_d{d}"
+  },
+  {
+   "name": "dgmark_{v}",
+   "for": {
+    "v": [
+     "greedy",
+     "top3",
+     "none",
+     "none_top3"
+    ]
+   },
+   "cmd": "{PY} scripts/baselines/run_dgmark.py --official-repo {DGM_REPO} {P} --variant {v} --out runs/dgmark_{v}"
+  },
+  {
+   "name": "calibrate_bands",
+   "cmd": "{PY} scripts/calibrate.py --partition {BANDS} --texts runs/dlm_kgw_d0/rows_shard*.jsonl --out calib/bands.json",
+   "creates": "calib/bands.json"
+  },
+  {
+   "name": "calibrate_dlm_kgw",
+   "cmd": "{PY} scripts/calibrate_baselines.py --detector dlm_kgw --texts runs/dlm_kgw_d0/rows_shard*.jsonl --official-repo {KGW_REPO} --out calib/dlm_kgw.json",
+   "creates": "calib/dlm_kgw.json"
+  },
+  {
+   "name": "calibrate_dgmark_greedy",
+   "cmd": "{PY} scripts/calibrate_baselines.py --detector dgmark --texts runs/dgmark_none/rows_shard*.jsonl --out calib/dgmark_greedy.json",
+   "creates": "calib/dgmark_greedy.json"
+  },
+  {
+   "name": "calibrate_dgmark_top3",
+   "cmd": "{PY} scripts/calibrate_baselines.py --detector dgmark --texts runs/dgmark_none_top3/rows_shard*.jsonl --out calib/dgmark_top3.json",
+   "creates": "calib/dgmark_top3.json"
+  },
+  {
+   "name": "ppl",
+   "cmd": "{PY_EVAL} scripts/score_ppl.py --runs runs/ours_* runs/dlm_kgw_* runs/dgmark_greedy runs/dgmark_top3 --prompts data/waterbench600_llada.jsonl"
+  },
+  {
+   "name": "judge",
+   "cmd": "{PY_EVAL} scripts/judge.py --runs runs/ours_* runs/dlm_kgw_* runs/dgmark_greedy runs/dgmark_top3 --prompts data/waterbench600_llada.jsonl --out judge/main",
+   "creates": "judge/main/quality.json"
+  },
+  {
+   "name": "report",
+   "cmd": "{PY} scripts/report.py --runs runs/ours_* runs/dlm_kgw_* runs/dgmark_greedy runs/dgmark_top3 --thresholds ours=calib/bands.json --thresholds dlm_kgw_=calib/dlm_kgw.json --thresholds dgmark_greedy=calib/dgmark_greedy.json --thresholds dgmark_top3=calib/dgmark_top3.json --judge judge/main/quality.json --contrast ours_d2:dlm_kgw_d2 --contrast ours_d3:dlm_kgw_d3 --out reports/main.json"
+  }
+ ]
+}

@@ -1,0 +1,588 @@
+[
+ {
+  "name": "base_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "base_dp1.25",
+  "delta": 1.25,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "base_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "base_dp1.75",
+  "delta": 1.75,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "base_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "cur_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "cur_dp1.25",
+  "delta": 1.25,
+  "lam": 0.5,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "cur_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "cur_dp1.75",
+  "delta": 1.75,
+  "lam": 0.5,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "cur_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam025_dp1.0",
+  "delta": 1.0,
+  "lam": 0.25,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam025_dp1.5",
+  "delta": 1.5,
+  "lam": 0.25,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam025_dp2.0",
+  "delta": 2.0,
+  "lam": 0.25,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam1_dp1.75",
+  "delta": 1.75,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "curlam1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "curlam1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "curlam1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "curlam1_dp1.75",
+  "delta": 1.75,
+  "lam": 1.0,
+  "foresight": "current",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam2_dp0.75",
+  "delta": 0.75,
+  "lam": 2.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam2_dp1.0",
+  "delta": 1.0,
+  "lam": 2.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam2_dp1.25",
+  "delta": 1.25,
+  "lam": 2.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "lam2_dp1.5",
+  "delta": 1.5,
+  "lam": 2.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "own_dp1.0",
+  "delta": 1.0,
+  "lam": 0.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "own_dp1.5",
+  "delta": 1.5,
+  "lam": 0.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "own_dp2.0",
+  "delta": 2.0,
+  "lam": 0.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "ctilt_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "ctilt_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "ctilt_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "gate0_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.0,
+  "order_iters": 4
+ },
+ {
+  "name": "gate0_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.0,
+  "order_iters": 4
+ },
+ {
+  "name": "gate0_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.0,
+  "order_iters": 4
+ },
+ {
+  "name": "gate01_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.1,
+  "order_iters": 4
+ },
+ {
+  "name": "gate01_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.1,
+  "order_iters": 4
+ },
+ {
+  "name": "gate01_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.1,
+  "order_iters": 4
+ },
+ {
+  "name": "plain_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "plain_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "plain_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "ctiltl1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "ctiltl1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "ctiltl1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "gate0l1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.0,
+  "order_iters": 4
+ },
+ {
+  "name": "gate0l1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.0,
+  "order_iters": 4
+ },
+ {
+  "name": "gate0l1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.0,
+  "order_iters": 4
+ },
+ {
+  "name": "gate01l1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.1,
+  "order_iters": 4
+ },
+ {
+  "name": "gate01l1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.1,
+  "order_iters": 4
+ },
+ {
+  "name": "gate01l1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.1,
+  "order_iters": 4
+ },
+ {
+  "name": "plainl1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "plainl1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "plainl1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "spneu_dp1.0",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4,
+  "special": "neutral"
+ },
+ {
+  "name": "spneu_dp1.5",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4,
+  "special": "neutral"
+ },
+ {
+  "name": "spneu_dp2.0",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4,
+  "special": "neutral"
+ },
+ {
+  "name": "spneul1_dp1.0",
+  "delta": 1.0,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4,
+  "special": "neutral"
+ },
+ {
+  "name": "spneul1_dp1.25",
+  "delta": 1.25,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4,
+  "special": "neutral"
+ },
+ {
+  "name": "spneul1_dp1.5",
+  "delta": 1.5,
+  "lam": 1.0,
+  "foresight": "predictor",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4,
+  "special": "neutral"
+ }
+]

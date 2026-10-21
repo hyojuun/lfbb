@@ -1,0 +1,11 @@
+[
+ {
+  "name": "width5_d4",
+  "delta": 2.0,
+  "lam": 0.0,
+  "foresight": "current",
+  "unit_aware": false,
+  "order": "current_tilt",
+  "context_width": 5
+ }
+]

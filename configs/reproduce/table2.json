@@ -1,0 +1,69 @@
+{
+ "description": "Table 2: the partition (keyed hash or learned bands) crossed with the beliefs behind foresight, under the same objective. Reuses runs/ours_d3_d4, runs/dlm_kgw_d0 and calib/bands.json of Table 1 when they exist.",
+ "vars": {
+  "PY": "python",
+  "PY_EVAL": "python",
+  "BANDS": "checkpoints/bands.pt",
+  "PREDICTOR": "checkpoints/predictor.pt",
+  "P": "--prompts data/waterbench600_llada.jsonl --prompt-ids data/waterbench600_ids.json",
+  "KGW_REPO": "external/diffusion-lm-watermark",
+  "DGM_REPO": "external/dgmark-watermarking"
+ },
+ "steps": [
+  {
+   "name": "{c}",
+   "for": {
+    "c": [
+     "current_d2",
+     "current_d3_d4",
+     "predictor_d2",
+     "ours_d3_d4",
+     "no_foresight_d2",
+     "no_foresight_d3_d4",
+     "exact_d2",
+     "exact_d3_d4"
+    ]
+   },
+   "cmd": "{PY} scripts/generate.py --arms configs/arms/{c}.json --partition {BANDS} --predictor {PREDICTOR} {P} --out runs/{c}"
+  },
+  {
+   "name": "hash_{c}",
+   "for": {
+    "c": [
+     "current_d2",
+     "current_d3_d4",
+     "predictor_d2",
+     "ours_d3_d4"
+    ]
+   },
+   "cmd": "{PY} scripts/generate.py --arms configs/arms/{c}.json --partition hash --arm-prefix hash_ --predictor {PREDICTOR} {P} --out runs/hash_{c}"
+  },
+  {
+   "name": "dlm_kgw_d0",
+   "cmd": "{PY} scripts/baselines/run_dlm_kgw.py --official-repo {KGW_REPO} {P} --delta 0 --out runs/dlm_kgw_d0"
+  },
+  {
+   "name": "calibrate_bands",
+   "cmd": "{PY} scripts/calibrate.py --partition {BANDS} --texts runs/dlm_kgw_d0/rows_shard*.jsonl --out calib/bands.json",
+   "creates": "calib/bands.json"
+  },
+  {
+   "name": "calibrate_hash",
+   "cmd": "{PY} scripts/calibrate.py --partition hash --texts runs/dlm_kgw_d0/rows_shard*.jsonl --out calib/hash.json",
+   "creates": "calib/hash.json"
+  },
+  {
+   "name": "ppl",
+   "cmd": "{PY_EVAL} scripts/score_ppl.py --runs runs/current_* runs/predictor_d2 runs/ours_d3_d4 runs/no_foresight_* runs/exact_* runs/hash_* --prompts data/waterbench600_llada.jsonl"
+  },
+  {
+   "name": "judge",
+   "cmd": "{PY_EVAL} scripts/judge.py --runs runs/current_* runs/predictor_d2 runs/ours_d3_d4 runs/no_foresight_* runs/exact_* runs/hash_* --prompts data/waterbench600_llada.jsonl --out judge/crossed",
+   "creates": "judge/crossed/quality.json"
+  },
+  {
+   "name": "report",
+   "cmd": "{PY} scripts/report.py --runs runs/current_* runs/predictor_d2 runs/ours_d3_d4 runs/no_foresight_* runs/exact_* runs/hash_* --thresholds calib/bands.json --thresholds hash_=calib/hash.json --judge judge/crossed/quality.json --contrast ours_d3:current_d3 --contrast current_d3:hash_current_d3 --interaction ours_d3:current_d3:hash_ours_d3:hash_current_d3 --out reports/crossed.json"
+  }
+ ]
+}

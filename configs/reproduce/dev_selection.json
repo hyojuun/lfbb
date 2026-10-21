@@ -1,0 +1,48 @@
+{
+ "description": "Select the watermark configuration on the 150 development prompts (scripts/select_dev.py), disjoint from the training and evaluation prompts. Needs the components of components.json.",
+ "vars": {
+  "PY": "python",
+  "PY_EVAL": "python",
+  "BANDS": "checkpoints/bands.pt",
+  "BANDS8": "checkpoints/bands_b8.pt",
+  "PREDICTOR": "checkpoints/predictor.pt",
+  "DEV": "data/dev150_prompts_llada.jsonl"
+ },
+ "steps": [
+  {
+   "name": "dev_none",
+   "cmd": "{PY} scripts/generate.py --arms configs/arms/unwatermarked.json --partition {BANDS} --prompts {DEV} --out runs/dev_none"
+  },
+  {
+   "name": "calibrate_dev",
+   "cmd": "{PY} scripts/calibrate.py --partition {BANDS} --texts runs/dev_none/rows_shard*.jsonl --out calib/dev_bands.json",
+   "creates": "calib/dev_bands.json"
+  },
+  {
+   "name": "calibrate_dev_b8",
+   "cmd": "{PY} scripts/calibrate.py --partition {BANDS8} --texts runs/dev_none/rows_shard*.jsonl --out calib/dev_bands_b8.json",
+   "creates": "calib/dev_bands_b8.json"
+  },
+  {
+   "name": "dev_candidates",
+   "cmd": "{PY} scripts/generate.py --arms configs/arms/dev_candidates.json --partition {BANDS} --predictor {PREDICTOR} --prompts {DEV} --out runs/dev_candidates"
+  },
+  {
+   "name": "dev_candidates_b8",
+   "cmd": "{PY} scripts/generate.py --arms configs/arms/dev_candidates_b8.json --partition {BANDS8} --predictor {PREDICTOR} --prompts {DEV} --out runs/dev_candidates_b8"
+  },
+  {
+   "name": "ppl",
+   "cmd": "{PY_EVAL} scripts/score_ppl.py --runs runs/dev_candidates runs/dev_candidates_b8 --prompts {DEV}"
+  },
+  {
+   "name": "judge",
+   "cmd": "{PY_EVAL} scripts/judge.py --runs runs/dev_candidates runs/dev_candidates_b8 --prompts {DEV} --out judge/dev"
+  },
+  {
+   "name": "select",
+   "cmd": "{PY} scripts/select_dev.py --runs runs/dev_candidates runs/dev_candidates_b8 --judge judge/dev/quality.json --out dev_selection.json",
+   "creates": "dev_selection.json"
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "description": "Learn the partition and the foresight predictor from the training prompts only. The records and the predictor states are decoded in the low-confidence order used for evaluation.",
+ "vars": {
+  "PY": "python",
+  "PY_EVAL": "python",
+  "BANDS": "checkpoints/bands.pt",
+  "BANDS8": "checkpoints/bands_b8.pt",
+  "PREDICTOR": "checkpoints/predictor.pt",
+  "TRAIN": "data/train_prompts_llada.jsonl"
+ },
+ "steps": [
+  {
+   "name": "records",
+   "cmd": "{PY} scripts/collect_records.py --prompts {TRAIN} --order low_confidence --out records/lowconf"
+  },
+  {
+   "name": "learn_bands",
+   "cmd": "{PY} scripts/learn_bands.py --data records/lowconf --out {BANDS}",
+   "creates": "{BANDS}"
+  },
+  {
+   "name": "learn_bands_b8",
+   "cmd": "{PY} scripts/learn_bands.py --data records/lowconf --bands 8 --out {BANDS8}",
+   "creates": "{BANDS8}"
+  },
+  {
+   "name": "states",
+   "cmd": "{PY} scripts/collect_states.py --prompts {TRAIN} --partition {BANDS} --unit-aware --gate 0.02 --lam 0.5 --out states/"
+  },
+  {
+   "name": "train_predictor",
+   "cmd": "{PY} scripts/train_predictor.py --data states/ --out {PREDICTOR} --epochs 6",
+   "creates": "{PREDICTOR}"
+  },
+  {
+   "name": "fidelity",
+   "cmd": "{PY} scripts/analyze_predictor.py --states states/ --predictor {PREDICTOR} --partition {BANDS} --out fidelity.json",
+   "creates": "fidelity.json"
+  }
+ ]
+}

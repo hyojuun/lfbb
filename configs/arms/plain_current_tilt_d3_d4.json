@@ -1,0 +1,22 @@
+[
+ {
+  "name": "plain_ct_d3",
+  "delta": 1.5,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ },
+ {
+  "name": "plain_ct_d4",
+  "delta": 2.0,
+  "lam": 0.5,
+  "foresight": "predictor",
+  "unit_aware": false,
+  "order": "current_tilt",
+  "gate": 0.02,
+  "order_iters": 4
+ }
+]

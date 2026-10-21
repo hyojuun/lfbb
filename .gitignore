@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.DS_Store
+runs/
+records/
+states/
+states_dream/
+states_codeqa/
+checkpoints/
+*.pt
+calib/
+judge/
+reports/
+attack/
+fidelity.json
+# official baseline code and raw benchmark files (not redistributed; GPQA must not be shared)
+external/
+raw/
+data/codeqa/
+data/waterbench600_*.jsonl
+data/other_tasks_llada.jsonl
+data/train_prompts_dream.jsonl

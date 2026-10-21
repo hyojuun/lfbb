@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learned Foresight and Balanced Bands</title>
+<meta name="description" content="Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands. Hyojun Kim, Hyeseon An, Yo-Sub Han. Yonsei University.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands">
+<meta property="og:description" content="A green-red watermark for diffusion language models that learns its vocabulary partition and the neighbors' beliefs after a candidate is placed, and counts evidence the way the detector does.">
+<meta property="og:url" content="https://hyojuun.github.io/lfbb/">
+<meta property="og:image" content="https://hyojuun.github.io/lfbb/static/images/fig_teaser.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+:root {
+  --paper: #ffffff; --ink: #1b1e24; --ink2: #434852; --ink3: #6b717c; --rule: #e3e6eb; --rule2: #cfd4db; --tint: #f6f7f9;
+  --blue: #2c5ba0; --blue-bg: #eef3fa; --green: #2f8f5b; --green-ink: #1d5a39; --green-bg: #dcf0e3;
+  --red: #c2473a; --red-ink: #8a2c23; --red-bg: #fbe6e2; --mask: #e2e6ec; --fresh: #fbefb3;
+  --serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 18.5px/1.65 var(--serif); font-optical-sizing: auto; text-rendering: optimizeLegibility; }
+a { color: var(--blue); text-decoration: underline; text-decoration-color: rgba(44, 91, 160, .32); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--blue); }
+.wrap { max-width: 1096px; margin: 0 auto; padding: 0 24px; }
+.col { max-width: 680px; }
+p { margin: 0 0 1.05em; }
+h1 { font: 600 2.6rem/1.12 var(--serif); letter-spacing: -.012em; margin: 0 0 .5em; text-wrap: balance; }
+h2 { font: 600 1.62rem/1.25 var(--serif); margin: 0 0 .75em; text-wrap: balance; }
+h3 { font: 600 1.02rem/1.35 var(--sans); margin: 2em 0 .55em; }
+em, i { font-style: italic; }
+section { padding: 3.2rem 0 1.2rem; border-top: 1px solid var(--rule); }
+.tk { font-family: var(--mono); font-size: .86em; font-style: normal; background: var(--tint); border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+
+/* title block */
+header.top { padding: 4.4rem 0 0; }
+.top .col { max-width: 900px; }
+.dek { font-size: 1.3rem; line-height: 1.5; color: var(--ink2); margin: 0; max-width: 680px; }
+.byline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 28px; margin: 2.2rem 0 0; padding: 14px 0 15px; border-top: 1px solid var(--rule2); border-bottom: 1px solid var(--rule); font: 15px/1.55 var(--sans); }
+.byline dt { font: 500 11.5px/1.4 var(--sans); text-transform: uppercase; letter-spacing: .09em; color: var(--ink3); margin: 0 0 5px; }
+.byline dd { margin: 0; }
+.byline .off { color: var(--ink3); }
+.byline .off small { font-size: 11.5px; letter-spacing: .02em; }
+
+/* demo */
+.demo { margin: 2.4rem 0 0; border: 1px solid var(--rule2); border-radius: 3px; background: var(--paper); }
+.ex-tabs { display: flex; flex-wrap: wrap; gap: 0 20px; padding: 8px 16px 0; border-bottom: 1px solid var(--rule); font: 500 14px/1.4 var(--sans); }
+.ex-tabs button { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 6px 0 8px; color: var(--ink3); cursor: pointer; }
+.ex-tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.prompt { padding: 11px 16px 12px; margin: 0; font: 15px/1.5 var(--sans); color: var(--ink2); }
+.prompt .task { font: 500 11.5px/1 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--ink3); margin-right: 8px; }
+.demo-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 16px; background: var(--tint); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.demo-bar .ctl { display: flex; flex-wrap: wrap; gap: 10px; }
+.seg { display: inline-flex; border: 1px solid var(--rule2); border-radius: 3px; overflow: hidden; background: #fff; }
+.seg button { font: 500 13.5px/1 var(--sans); border: 0; background: none; color: var(--ink2); padding: 7px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule2); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.replay { font: 500 13.5px/1 var(--sans); background: #fff; border: 1px solid var(--rule2); border-radius: 3px; padding: 7px 12px; color: var(--ink2); cursor: pointer; }
+.progress { height: 2px; background: var(--rule); }
+.progress i { display: block; height: 100%; width: 100%; background: var(--ink2); }
+.canvas { padding: 16px 18px; font: 14px/1.95 var(--mono); white-space: pre-wrap; word-break: break-word; height: 320px; overflow: auto; color: var(--ink); }
+.canvas .m { display: inline-block; width: 1.3em; height: .95em; margin: 0 .12em; border-radius: 2px; background: var(--mask); vertical-align: -.1em; }
+.canvas .t { transition: background-color .6s; border-radius: 2px; }
+.canvas .t.fresh { background: var(--fresh); transition: none; }
+.canvas .u { border-radius: 2px; }
+.canvas .u.pending { color: #b6bbc4; }
+.canvas .u.g { background: var(--green-bg); color: var(--green-ink); }
+.canvas .u.r { background: var(--red-bg); color: var(--red-ink); }
+.canvas .u.rep { color: #9aa0aa; text-decoration: line-through; }
+.demo-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 10px 16px 12px; border-top: 1px solid var(--rule); font: 13.5px/1.5 var(--sans); color: var(--ink2); }
+.stat { font-family: var(--mono); color: var(--ink); }
+.verdict { font-weight: 600; }
+.verdict.yes { color: var(--green); }
+.verdict.no { color: var(--ink3); }
+.key { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; }
+.key i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+
+/* captions, notes */
+figure { margin: 1.9rem 0 2.1rem; }
+figure img { display: block; width: 100%; height: auto; }
+figcaption, .cap { font: 14px/1.55 var(--sans); color: var(--ink2); margin-top: 10px; }
+figcaption b, .cap b { color: var(--ink); font-weight: 600; }
+.sn { font: 13.8px/1.55 var(--sans); color: var(--ink3); }
+.sn b { color: var(--ink2); font-weight: 600; }
+@media (min-width: 1140px) {
+  .sn { float: right; clear: right; width: 300px; margin: .25rem -368px 1rem 0; }
+}
+@media (max-width: 1139px) {
+  .sn { display: block; margin: -.2em 0 1.25em; padding: 1px 0 1px 14px; border-left: 2px solid var(--rule); }
+}
+
+/* abstract */
+.abstract { font-size: 1.03rem; color: var(--ink2); }
+.label { font: 500 11.5px/1 var(--sans); text-transform: uppercase; letter-spacing: .09em; color: var(--ink3); margin: 0 0 .9em; }
+
+/* equations */
+.eq { margin: 1.1em 0 1.25em; font-size: 1.05rem; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.eq .katex-display { margin: 0; }
+
+/* commit order strip */
+.order { display: grid; grid-template-columns: 136px 1fr; gap: 9px 14px; align-items: center; font: 13.5px/1.4 var(--sans); margin: 1.5rem 0 .2rem; }
+.order .lab { color: var(--ink3); }
+.toks { display: flex; flex-wrap: wrap; gap: 4px; }
+.tok { font: 13px/1 var(--mono); padding: 6px 7px 5px; border: 1px solid var(--rule2); border-radius: 3px; background: #fff; color: var(--ink); white-space: pre; }
+.tok sub { font: 10.5px/1 var(--sans); color: var(--ink3); margin-left: 3px; }
+.tok.early { border-color: #d6a21a; background: #fff6d8; }
+
+/* small bar comparison */
+.mini { margin: 1.3rem 0 1.7rem; font: 13.5px/1.4 var(--sans); }
+.mini .t { color: var(--ink2); margin-bottom: 6px; }
+.mini .row { display: grid; grid-template-columns: 150px 1fr 44px; align-items: center; gap: 12px; margin: 5px 0; }
+.mini .bar { height: 10px; background: var(--tint); border-radius: 2px; position: relative; }
+.mini .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
+.mini .v { font-family: var(--mono); text-align: right; color: var(--ink); }
+
+/* decision states */
+.ds { border: 1px solid var(--rule2); border-radius: 3px; margin: 1.7rem 0 .4rem; }
+.ds .ex-tabs { padding-top: 6px; }
+.ds-ctx { padding: 13px 16px 12px; font: 14px/1.6 var(--mono); color: var(--ink2); border-bottom: 1px solid var(--rule); }
+.ds-ctx .slot { display: inline-block; padding: 0 7px; border: 1.5px solid var(--ink); border-radius: 3px; color: var(--ink); margin-left: 2px; }
+.ds-ctx .mk { display: inline-block; padding: 0 7px; background: var(--mask); border-radius: 3px; color: var(--ink3); margin-left: 4px; }
+.ds-scroll { overflow-x: auto; }
+.ds-grid { display: grid; grid-template-columns: minmax(150px, .9fr) minmax(170px, 1fr) minmax(170px, 1fr); min-width: 540px; }
+.ds-grid > div { padding: 10px 16px; border-top: 1px solid var(--rule); }
+.ds-grid > .h { font: 500 11.5px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--ink3); border-top: 0; padding-top: 11px; padding-bottom: 8px; }
+.ds-grid > .pre { background: var(--tint); }
+.ds-grid .who { font: 13.5px/1.4 var(--sans); color: var(--ink2); }
+.ds-grid .who .tk { font-size: 13px; background: #fff; }
+.ds-grid .who small { font: 12.5px var(--mono); color: var(--ink3); margin-left: 4px; }
+.pb { display: grid; grid-template-columns: minmax(70px, auto) 1fr 34px; gap: 9px; align-items: center; font: 13px/1.35 var(--mono); margin: 2px 0; }
+.pb .bar { height: 6px; background: var(--rule); border-radius: 3px; position: relative; }
+.pb .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: #8a919c; border-radius: 3px; }
+.pb.top .bar i { background: var(--blue); }
+.pb .v { text-align: right; color: var(--ink3); }
+
+/* tables */
+.tw { overflow-x: auto; margin: 1.5rem 0 .5rem; }
+table { border-collapse: collapse; font: 14.5px/1.4 var(--sans); font-variant-numeric: tabular-nums; width: 100%; }
+.tw.main table { min-width: 580px; }
+th, td { padding: 6px 10px; text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead tr:first-child th { border-top: 1.5px solid var(--ink); }
+thead tr:last-child th { border-bottom: 1px solid var(--ink); }
+th { font-weight: 500; color: var(--ink2); }
+thead tr:last-child th { font-weight: 600; color: var(--ink); }
+tbody tr.sep td { border-top: 1px solid var(--rule2); }
+tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
+tr.ours td { background: var(--blue-bg); }
+td.b { font-weight: 600; }
+th.grp { text-align: center; color: var(--ink3); }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 40px; align-items: start; margin: 1.2rem 0 1.4rem; }
+.pair .tw { margin-top: .4rem; }
+
+/* citation */
+.bib { position: relative; margin: 1.2rem 0 0; max-width: 900px; }
+.bib pre { background: var(--tint); border: 1px solid var(--rule); border-radius: 3px; padding: 16px 18px; overflow-x: auto; font: 13.2px/1.6 var(--mono); color: var(--ink); margin: 0; }
+.copy { position: absolute; top: 10px; right: 10px; font: 500 12.5px/1 var(--sans); background: #fff; border: 1px solid var(--rule2); border-radius: 3px; padding: 6px 10px; cursor: pointer; color: var(--ink2); }
+footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 3rem; font: 13.5px/1.55 var(--sans); color: var(--ink3); }
+
+.pair > div { min-width: 0; }
+@media (max-width: 860px) {
+  .pair { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  body { font-size: 17.5px; }
+  header.top { padding-top: 2.8rem; }
+  h1 { font-size: 1.95rem; }
+  h2 { font-size: 1.4rem; }
+  .dek { font-size: 1.12rem; }
+  .byline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .canvas { height: 260px; font-size: 13px; padding: 14px; }
+  .order { grid-template-columns: 1fr; gap: 6px; }
+  .order .lab { margin-top: 6px; }
+  section { padding-top: 2.4rem; }
+  .mini .row { grid-template-columns: 112px 1fr 40px; }
+}
+@media (max-width: 440px) {
+  .wrap { padding: 0 16px; }
+  .eq { font-size: .8rem; }
+  .byline { grid-template-columns: 1fr; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas .t { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+  <div class="col">
+    <h1>Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands</h1>
+    <p class="dek">Diffusion language models often commit a token before the tokens that select its green list, and the token later shapes its neighbors' green lists. We learn the two components that green-red watermarks for these models keep fixed, and count evidence the way the detector does.</p>
+  </div>
+  <dl class="byline">
+    <div><dt>Authors</dt><dd>Hyojun Kim<br>Hyeseon An<br>Yo-Sub Han</dd></div>
+    <div><dt>Affiliation</dt><dd>Yonsei University</dd></div>
+    <div><dt>Status</dt><dd>Preprint, 2026</dd></div>
+    <div><dt>Links</dt><dd><span class="off" data-link="pdf">Paper <small>(soon)</small></span><br><span class="off" data-link="arxiv">arXiv <small>(soon)</small></span><br><a href="https://github.com/hyojuun/lfbb">Code</a> · <a href="#cite">BibTeX</a></dd></div>
+  </dl>
+
+  <div class="demo" id="example">
+    <div class="ex-tabs" id="tabs" role="group" aria-label="Example prompts"></div>
+    <p class="prompt"><span class="task" id="task">ELI5</span><span id="qtext"></span></p>
+    <div class="demo-bar">
+      <div class="ctl">
+        <div class="seg" role="group" aria-label="Watermark"><button type="button" id="arm-ours" aria-pressed="true">Ours, δ = 4</button><button type="button" id="arm-none" aria-pressed="false">No watermark</button></div>
+        <div class="seg" role="group" aria-label="View"><button type="button" id="view-dec" aria-pressed="true">Decoding</button><button type="button" id="view-det" aria-pressed="false">Detector</button></div>
+      </div>
+      <button type="button" class="replay" id="replay">Replay</button>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+    <div class="canvas" id="canvas" aria-live="off"></div>
+    <div class="demo-foot"><div id="legend"></div><div id="meter"></div></div>
+  </div>
+  <p class="cap col"><b>A watermarked response, as it is decoded and as the detector reads it.</b> LLaDA-8B-Instruct answers WaterBench prompts with our watermark at δ = 4 and without a watermark, from the same random seed. <i>Decoding</i> shows the tokens in the order the model commits them (low-confidence order, blocks of 32 tokens). <i>Detector</i> re-tokenizes the text and counts every distinct (context, token) unit once, so a unit that repeats an earlier one adds no evidence.</p>
+</header>
+
+<main>
+<section class="wrap" id="abstract">
+  <div class="col">
+    <p class="label">Abstract</p>
+    <p class="abstract">Green-red watermarks favor tokens from a green list that a secret key derives from the preceding tokens. Diffusion language models, however, often choose a token before its preceding tokens, and the token later shapes its neighbors' green lists. Prior work therefore tilts each choice to raise the expected number of green tokens at its own and its neighbors' positions. Building on this objective, we first learn two components that prior work keeps fixed: vocabulary bands that serve as green lists, separate competing candidates and keep the null distribution exact, and a foresight predictor that estimates how each candidate shifts its neighbors' predictions. Second, we count green tokens as the detector does, once per distinct context-token pair, so repetition earns nothing. On WaterBench with LLaDA-8B-Instruct, each learned component raises the z-score at equal distortion, and their gains are nearly additive. With a strong watermark, ours detects at least 96% of responses at a 1% false-positive rate while matching the LLM-judge score of unwatermarked text. Ours also detects more responses on Dream and as many or more on code and question answering without a significant loss in task accuracy.</p>
+  </div>
+</section>
+
+<section class="wrap" id="problem">
+  <div class="col">
+    <h2>A token is chosen before its context exists</h2>
+    <p>In green-red watermarks, a secret key and the preceding tokens select a <em>green list</em> at each position, the generator favors green tokens, and a detector that knows the key tests whether a text contains more green tokens than chance would give. This design relies on two conditions that autoregressive generation guarantees. When a token is sampled, the tokens that select its green list are already fixed, and the tokens whose green lists it helps select do not exist yet.</p>
+    <aside class="sn"><b>Belief.</b> At every step, a masked diffusion LM predicts a distribution over the vocabulary for each masked position, its belief, and <b>commits</b> some positions by sampling their tokens, which then stay fixed.</aside>
+    <p>Diffusion language models such as LLaDA and Dream break both conditions. They generate a response by iteratively unmasking a canvas of mask tokens, and they commit tokens in an order that is not strictly left to right. In the default order of LLaDA-8B-Instruct, 39% of the tokens are committed while part of their context is still masked, and 37% after one of the next two tokens, whose context they are part of.</p>
+    <div class="order" aria-label="Commit order of the first twelve tokens of the example above">
+      <span class="lab">Left to right</span><div class="toks" id="ar"></div>
+      <span class="lab">LLaDA-8B-Instruct</span><div class="toks" id="dlm"></div>
+    </div>
+    <p class="cap">The first twelve tokens of the response above, numbered by the step at which they are committed. Highlighted tokens are committed before a token to their left.</p>
+    <p>A watermark must therefore choose a token before its green list is known, and this choice also shapes the green lists of its neighbors. DLM-KGW (Gloaguen et al., 2026) handles both cases with the model's beliefs about the masked positions. It maximizes the expected share of green tokens under a KL constraint, so it favors a candidate that is likely to be green and one that makes its neighbors green.</p>
+  </div>
+</section>
+
+<section class="wrap" id="method">
+  <div class="col">
+    <h2>Each commit maximizes the evidence the detector counts</h2>
+    <aside class="sn"><b>Unit.</b> A distinct (context, token) pair. Detectors count each unit once, since a repeated unit carries no new evidence. We use the two preceding tokens as context.</aside>
+    <p>We build on this optimization view but maximize the expected evidence of the statistic that the detector actually computes, the number of distinct green units. Committing a candidate <i>v</i> at position <i>j</i> affects that count in two ways. The unit at <i>j</i> may be green, and <i>v</i> enters the contexts of the units at <i>j</i>+1 and <i>j</i>+2, its dependents. Relative to the null rate γ, a candidate's expected contribution is</p>
+    <div class="eq" data-tex="s(v) \;=\; \underbrace{g_0(v)-\gamma}_{\text{own}} \;+\; \lambda\,\underbrace{\textstyle\sum_{t=1,2}\big(g_t(v)-\gamma\big)}_{\text{foresight }\Phi(v)}">s(v) = (g₀(v) − γ) + λ Σₜ (gₜ(v) − γ)</div>
+    <p>where <i>g</i><sub>0</sub>(<i>v</i>) is the probability that <i>v</i> is green given the beliefs about its context, and <i>g</i><sub><i>t</i></sub>(<i>v</i>) the probability that the dependent <i>j</i>+<i>t</i> becomes green once <i>v</i> is placed. The weight λ = ½ lets the two dependents together weigh as much as the position itself, since they are tilted again when they are committed. The distribution that maximizes the expected score under a KL penalty <em>tilts</em> the model's distribution <i>p</i>:</p>
+    <aside class="sn">This is the Gibbs variational principle. With a score of one for green tokens, the tilt is that of Kirchenbauer et al. (2023), and DLM-KGW is the special case with a one-token context, one dependent, λ = 1, current beliefs and the plain score.</aside>
+    <div class="eq" data-tex="q^\star(v) \;\propto\; p(v)\, e^{\beta s(v)}">q*(v) ∝ p(v) exp(β s(v))</div>
+    <p>A unit that already occurs in the committed text adds no evidence, so this <em>unit-aware</em> score sets its green probability to γ, and repetition earns nothing. The tilt of DLM-KGW omits this correction and keeps rewarding repeated green units. Under this objective, the evidence that a commit can gain at a given distortion depends on two components that existing green-red DLM watermarks keep fixed, the partition of the vocabulary and the beliefs from which foresight is computed.</p>
+  </div>
+  <figure>
+    <img src="static/images/fig_overview.png" alt="Overview: the DLM canvas at position j, the learned bands, the foresight predictor, the tilt toward charge, and the detector that needs only the key and the bands" width="2064" height="827">
+    <figcaption class="col"><b>Our watermark at one masked position (illustrative tokens and probabilities).</b> The model prefers <i>have</i>, but the tilt moves its distribution toward <i>charge</i>, which is probably red itself but makes its predicted neighbors <i>low fees</i> green. Each module is learned offline from its own data (top), the tilt combines the own and foresight terms during generation (middle), and the detector needs only the key and the bands (bottom).</figcaption>
+  </figure>
+</section>
+
+<section class="wrap" id="bands">
+  <div class="col">
+    <h2>Learned bands spread competing candidates</h2>
+    <figure style="margin-top:0">
+      <img src="static/images/teaser_bands.png" alt="Four candidates, charge, have, offer and pay, assigned to four bands. A keyed hash puts charge and have into the same band and leaves the green band empty, while learned bands put each candidate into its own band" width="1360" height="524">
+    </figure>
+    <aside class="sn"><b>Why the key still picks the band.</b> A green list learned without the key would be the same for every key, so unwatermarked text could match it and the null distribution would no longer be known.</aside>
+    <p>Learned bands decouple the partition, which we learn, from the key, which only selects the green band. A partition assigns every token to one of four bands, and a keyed hash of the context selects one band as the green list (γ = 0.25, as in DLM-KGW). Because the key still picks the green band, the number of green units in any text that does not depend on the key has a known distribution for every partition, and the detector's <i>p</i>-value stays exact.</p>
+    <p>The partition still determines how much the tilt can gain. A band that holds almost all of the probability, or almost none, gains little when it is green, so the tilt gains the most on average over keys when every band holds a likely candidate. We therefore learn the partition that maximizes this gain over the commits of unwatermarked decoding traces of training prompts, by coordinate ascent over tokens.</p>
+    <div class="mini" role="img" aria-label="Share of held-out commits in which the two most likely candidates share a band: 25 percent for random bands, 17 percent for learned bands">
+      <div class="t">Two most likely candidates in the same band, held-out commits</div>
+      <div class="row"><span>Random bands</span><span class="bar"><i style="width:83.3%;background:#9ea5b0"></i></span><span class="v">25%</span></div>
+      <div class="row"><span>Learned bands</span><span class="bar"><i style="width:56.7%;background:var(--blue)"></i></span><span class="v">17%</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="predictor">
+  <div class="col">
+    <h2>The predictor sees the neighbors after placement</h2>
+    <figure style="margin-top:0">
+      <img src="static/images/teaser_foresight.png" alt="Context Index funds, a masked position j and two masked neighbors. Prior work uses the same current beliefs for every candidate. With predicted post-placement beliefs, placing charge makes both neighbors green, low and fees, while have leads to lower costs, both red" width="1360" height="543">
+    </figure>
+    <p>Foresight needs the neighbors' beliefs once <i>v</i> is placed. Existing methods use the beliefs before placement, which are the same for every candidate, although placing a candidate changes the most likely token of a masked neighbor in 74% of uncertain commits, or <em>decision states</em>. Computing the post-placement beliefs exactly costs one generator pass per candidate.</p>
+    <div class="ds" id="ds">
+      <div class="ex-tabs" id="ds-tabs" role="group" aria-label="Decision states"></div>
+      <div class="ds-ctx" id="ds-ctx"></div>
+      <div class="ds-scroll"><div class="ds-grid" id="ds-grid"></div></div>
+    </div>
+    <p class="cap"><b>Real decision states of LLaDA-8B-Instruct</b> (training prompts, low-confidence order), with the top two beliefs about the two masked neighbors before placement and after placing each of the two most likely candidates. Before placement, the belief is one distribution for all candidates, often a mixture of their continuations. After placement, each candidate determines a different, usually sharper prediction.</p>
+    <aside class="sn">Before training, the predictor's output equals the current beliefs. During decoding it runs only for the position that wins a commit, and detection never runs it.</aside>
+    <p>The <em>foresight predictor</em> estimates these beliefs instead. Like the draft heads of speculative decoding, it reads the generator's hidden states. An adapter rewrites the state at <i>j</i> to encode <i>v</i>, and fine-tuned copies of the generator's top layers process a window around <i>j</i> with and without the rewrite. Their difference, added to the generator's final states and read through its output layer, gives the post-placement beliefs, and all candidates of a commit share one batched pass. We distill the predictor from the generator's own post-placement predictions at decision states of training prompts.</p>
+  </div>
+</section>
+
+<section class="wrap" id="results">
+  <div class="col">
+    <h2>Results</h2>
+    <aside class="sn"><b>Protocol.</b> WaterBench-600 (long-form QA from ELI5, finance QA from FiQA, instruction following from AlpacaFarm), LLaDA-8B-Instruct in its low-confidence order, up to 256 tokens in blocks of 32 at temperature 0.5. The components are learned on disjoint training prompts, and the baselines are generated and detected with their official code.</aside>
+    <p>We compare with the two DLM watermarks whose official code runs in this setting, DLM-KGW in its main configuration and dgMARK, which watermarks the decoding order instead of the tokens. TPRs use thresholds calibrated on 600 unwatermarked responses re-detected under 100 keys, log-perplexity is measured under Qwen3-8B, and the judge, Gemma-4-12B-it, rates style and consistency from 1 to 10.</p>
+  </div>
+  <div class="col">
+    <div class="tw main">
+      <table>
+        <thead>
+          <tr><th></th><th></th><th class="grp" colspan="2">TPR (%) ↑</th><th>log-PPL</th><th>Judge</th><th>Rep. (%)</th></tr>
+          <tr><th>Method</th><th>δ</th><th>@1%</th><th>@0.1%</th><th>↓</th><th>↑</th><th>↓</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>No watermark</td><td>–</td><td>–</td><td>–</td><td>1.297</td><td>9.12</td><td>19.3</td></tr>
+          <tr><td>dgMARK, greedy</td><td>–</td><td>92.7</td><td>84.2</td><td>1.550</td><td>9.07</td><td>16.2</td></tr>
+          <tr><td>dgMARK, top-3</td><td>–</td><td>92.3</td><td>84.3</td><td>1.557</td><td>9.12</td><td>15.2</td></tr>
+          <tr class="sep"><td>DLM-KGW</td><td>2</td><td>51.3</td><td>24.8</td><td class="b">1.316</td><td>9.13</td><td>19.3</td></tr>
+          <tr class="ours"><td>Ours</td><td>2</td><td class="b">69.5</td><td class="b">44.0</td><td>1.326</td><td class="b">9.29</td><td class="b">18.2</td></tr>
+          <tr class="sep"><td>DLM-KGW</td><td>3</td><td>85.7</td><td>70.0</td><td class="b">1.387</td><td>8.97</td><td>23.3</td></tr>
+          <tr class="ours"><td>Ours</td><td>3</td><td class="b">89.3</td><td class="b">79.3</td><td>1.398</td><td class="b">9.30</td><td class="b">14.0</td></tr>
+          <tr class="sep"><td>DLM-KGW</td><td>4</td><td>96.0</td><td>91.3</td><td>1.506</td><td>8.62</td><td>26.3</td></tr>
+          <tr class="ours"><td>Ours</td><td>4</td><td class="b">96.2</td><td class="b">92.7</td><td class="b">1.469</td><td class="b">9.32</td><td class="b">14.3</td></tr>
+          <tr class="sep"><td>DLM-KGW</td><td>5</td><td>97.7</td><td>95.3</td><td>1.602</td><td>8.15</td><td>30.5</td></tr>
+          <tr class="ours"><td>Ours</td><td>5</td><td class="b">98.3</td><td class="b">96.0</td><td class="b">1.575</td><td class="b">9.26</td><td class="b">12.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap"><b>WaterBench-600 with LLaDA-8B-Instruct.</b> Rep. is the share of responses with a repetition loop, in which over 15% of the word 4-grams repeat an earlier one. Bold marks the better of DLM-KGW and ours at the same δ.</p>
+
+    <h3>At low strengths, ours detects more at the same log-perplexity</h3>
+    <p>Low strengths cost the least quality but leave detection uncertain, so extra evidence matters most there. Averaged over five keys on 300 prompts, ours detects 12.7 and 4.5 points more responses than DLM-KGW at 1% FPR at δ = 2 and 3, and 11.9 and 10.3 points more at 0.1% FPR, all significantly, with no significant difference in log-perplexity.</p>
+    <figure>
+      <img src="static/images/fig_frontier.png" alt="TPR at 1% FPR against log-perplexity for ours, DLM-KGW and dgMARK. Ours lies above DLM-KGW at delta 2 and 3" width="1400" height="910" style="max-width:560px">
+      <figcaption><b>Detection against log-perplexity.</b> Numbers in the markers are δ, and arrows mark our gain at the same δ.</figcaption>
+    </figure>
+
+    <h3>Where both detect almost every response, ours keeps the quality of text without a watermark</h3>
+    <p>At δ = 4 and 5, the judge rates ours 9.32 and 9.26, at least as high as text without a watermark (9.12), against 8.62 and 8.15 for DLM-KGW, and a second judge agrees. Most of the gap is explained by repetition loops. The tilt of DLM-KGW keeps rewarding repeated green units, although both detectors count each unit once, and its share of looping responses grows from 19 to 31% with δ, while ours stays between 12 and 18%. Removing our unit-aware score confirms the cause, as ours then loops in 21% of its responses instead of 14% at δ = 3 and 4.</p>
+
+    <h3>The two components add up</h3>
+    <aside class="sn">Random bands raise the mean <i>z</i>-score by only 0.08 at δ = 3 (not significant), so the gain comes from learning. On unwatermarked text, learned bands flag 0.7–1.8% of texts at a nominal 1% level, none significantly above 1%.</aside>
+    <p>Crossing the partition (keyed hash or learned bands) with the beliefs behind foresight (current or predicted) under the same objective isolates each component. Learned bands raise the mean <i>z</i>-score by 0.41–0.47 at every strength without raising log-perplexity, and the predictor raises it by 0.10–0.28 with either partition. Their gains are close to additive. Together, they detect 20.5 and 4.8 points more responses at 1% FPR at δ = 2 and 3, with no significant change in log-perplexity or judge score, and need 30% and 22% less KL for the same mean <i>z</i>-score.</p>
+  </div>
+  <figure>
+    <img src="static/images/fig_components.png" alt="Gains of learned bands only, the predictor only and both, at equal KL, equal mean z-score and equal TPR at 1% FPR" width="2064" height="624">
+    <figcaption class="col"><b>Each component against the cell with neither</b> (keyed hash, current beliefs), in mean <i>z</i>-score at equal KL (a), KL saved at equal mean <i>z</i>-score (b) and log-perplexity at equal TPR@1% (c). Error bars are paired bootstrap 95% confidence intervals.</figcaption>
+  </figure>
+  <div class="col">
+    <h3>Why post-placement beliefs matter</h3>
+    <p>On 2,397 held-out decision states, foresight from the current beliefs is only weakly correlated with exact foresight (0.39) and explains none of its variance. The predictor recovers each neighbor's post-placement top-1 token in 61% of the cases, explains 49% of the variance, and ranks the exact best candidate first in 54% of the states, against 28% for the current beliefs. It costs 1.49 times the decoding time of current beliefs, against at least 2.15 times for exact foresight, which re-runs the generator for each candidate.</p>
+    <figure>
+      <img src="static/images/fig_foresight.png" alt="Fidelity of current beliefs and the predictor to exact foresight, and the gain of the predictor in mean z-score at the same delta and at equal KL" width="1400" height="1210" style="max-width:500px">
+      <figcaption><b>(a)</b> Fidelity to exact foresight on held-out decision states. <b>(b)</b> Gain of the predictor in mean <i>z</i>-score over current-belief foresight with learned bands, at the same δ and at equal KL, with 95% confidence intervals.</figcaption>
+    </figure>
+
+    <h3>Another model, other tasks, and edits</h3>
+  </div>
+  <div class="pair">
+    <div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th></th><th class="grp" colspan="2">Learned for</th><th class="grp" colspan="2">Unseen</th></tr>
+            <tr><th>δ = 4</th><th>MBPP</th><th>MMLU-Pro</th><th>HumanEval</th><th>GPQA-D</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5" style="text-align:left;color:var(--ink3);padding-top:9px">TPR@1% (%) ↑</td></tr>
+            <tr><td>DLM-KGW</td><td>15.0</td><td>60.0</td><td>17.7</td><td>72.2</td></tr>
+            <tr class="ours"><td>Ours</td><td class="b">22.5</td><td class="b">65.0</td><td>17.7</td><td>72.2</td></tr>
+            <tr class="sep"><td colspan="5" style="text-align:left;color:var(--ink3);padding-top:9px">Pass@1 or accuracy (%) ↑</td></tr>
+            <tr><td>No watermark</td><td>37.0</td><td>40.0</td><td>35.4</td><td>20.7</td></tr>
+            <tr><td>DLM-KGW</td><td>32.5</td><td>35.0</td><td class="b">34.8</td><td>26.8</td></tr>
+            <tr class="ours"><td>Ours</td><td class="b">36.5</td><td class="b">35.7</td><td>33.5</td><td class="b">29.3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap"><b>Code and QA</b> with LLaDA-8B-Instruct, both components learned on training problems from MBPP, MMLU-Pro and GSM8K, none from HumanEval or GPQA-Diamond (chance 25%).</p>
+    </div>
+    <div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th>Dream-v0-Instruct-7B</th><th>δ</th><th>TPR@1% ↑</th><th>Valid (%) ↑</th><th>log-PPL ↓</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>No watermark</td><td>–</td><td>–</td><td>62.8</td><td>2.188</td></tr>
+            <tr class="sep"><td>DLM-KGW</td><td>3</td><td>42.0</td><td>53.8</td><td>2.505</td></tr>
+            <tr><td>Ours, transferred</td><td>3</td><td>57.3</td><td>78.2</td><td>2.290</td></tr>
+            <tr class="ours"><td>Ours, learned</td><td>3</td><td class="b">60.0</td><td class="b">81.3</td><td class="b">2.278</td></tr>
+            <tr class="sep"><td>DLM-KGW</td><td>4</td><td>56.5</td><td>54.3</td><td>2.631</td></tr>
+            <tr><td>Ours, transferred</td><td>4</td><td>75.5</td><td>80.3</td><td>2.353</td></tr>
+            <tr class="ours"><td>Ours, learned</td><td>4</td><td class="b">78.3</td><td class="b">84.2</td><td class="b">2.316</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cap"><b>Dream</b> on WaterBench-600 (official random order), nominal TPR@1%. Transferred: LLaDA's partition with current beliefs. Learned: both components learned for Dream. Log-perplexity over valid responses.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p><b>Code and question answering.</b> Learned on code and QA training prompts, ours detects 7.5 points more programs than DLM-KGW (significantly) and 5.0 points more answers, and as many on HumanEval and GPQA-Diamond, which have no training prompts, while its pass@1 and accuracy do not fall significantly below those without a watermark.</p>
+    <p><b>Dream.</b> LLaDA's partition, transferred through identical tokens, already detects 57.3% and 75.5% of the responses at δ = 3 and 4, against 42.0% and 56.5% for DLM-KGW. Most of this gap comes from response length, as 44% of the DLM-KGW responses at δ = 4 are too short to carry a signal, against 13% of ours, which treats special tokens as red.</p>
+    <p><b>Edits.</b> Under 20% random deletions or insertions, ours detects about as many responses as DLM-KGW, and its AUC stays above 96% under every token edit. Under 20% substitutions it detects 6.7 points fewer, the price of two-token contexts. After paraphrasing, both token-level watermarks keep an AUC of 67–75%, against 52–58% for dgMARK.</p>
+  </div>
+</section>
+
+<section class="wrap" id="cite">
+  <div>
+    <h2>Citation</h2>
+    <div class="bib">
+      <button type="button" class="copy" id="copy">Copy</button>
+<pre id="bibtex">@misc{kim2026watermarking,
+  title         = {Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands},
+  author        = {Kim, Hyojun and An, Hyeseon and Han, Yo-Sub},
+  year          = {2026},
+  eprint        = {XXXX.XXXXX},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}</pre>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">
+  <div class="col">Figures and numbers are from the paper. The layout borrows the margin notes of <a href="https://edwardtufte.github.io/tufte-css/">Tufte CSS</a> and the byline of <a href="https://distill.pub/">Distill</a>.</div>
+</footer>
+
+<script type="application/json" id="demo-data">{"source":"LLaDA-8B-Instruct, WaterBench-600, low-confidence order, blocks of 32, T 0.5, seed 0; ours = the paper's configuration at delta 4 (learned bands + foresight predictor, lambda 0.5); detector key 42; threshold for 1% FPR = 2.368 (calibrated over 100 keys).","threshold":2.368,"examples":[{"task":"Long-form QA (ELI5)","question":"(ELI5) Explain to me the collapse of the Soviet Union. How did one of the largest superpowers manage to fall? Is it possible something similar could eventually happen to the USA? Explain like I'm five.","arms":{"ours_d4":{"z":7.09,"n":196,"k":93,"n_gen":254,"commits":[[1,"!"],[0,"Sure"],[2," Imagine"],[4," Soviet"],[3," the"],[5," Union"],[7," a"],[8," big"],[9," and"],[10," strong"],[11," family"],[6," like"],[12," with"],[13," many"],[14," members"],[15,","],[16," all"],[18," in"],[17," living"],[22,"."],[21," house"],[19," one"],[23," The"],[20," big"],[24," big"],[26," was"],[25," house"],[27," a"],[30," and"],[31," the"],[29,","],[28," country"],[33," members"],[32," family"],[34," were"],[35," like"],[38,"."],[36," different"],[37," regions"],[39,"\n"],[40,"\n"],[41,"Now"],[42,","],[43," the"],[46," the"],[45," of"],[44," collapse"],[48," Union"],[47," Soviet"],[50," like"],[49," is"],[53," family"],[52," the"],[51," when"],[57," to"],[59," their"],[54," members"],[60," own"],[55," all"],[58," go"],[61," ways"],[56," decide"],[62," and"],[63," start"],[64," their"],[65," own"],[68,"."],[66," separate"],[73," big"],[74," house"],[72," the"],[69," This"],[71," because"],[70," happened"],[78," Union"],[75," ("],[79,")"],[77," Soviet"],[76,"the"],[67," houses"],[80," was"],[83," well"],[81," not"],[82," working"],[84," anymore"],[85,"."],[86," People"],[91," unhappy"],[90," were"],[87," in"],[88," different"],[89," areas"],[92," and"],[93," wanted"],[94," to"],[95," be"],[101,"."],[103,"\n"],[102,"\n"],[97," to"],[98," make"],[96," free"],[100," choices"],[99," different"],[105,","],[104,"So"],[106," if"],[107," the"],[108," USA"],[109," had"],[110," a"],[113,","],[111," similar"],[114," it"],[115," would"],[116," be"],[117," like"],[118," if"],[119," some"],[121," members"],[120," family"],[123," the"],[122," in"],[112," situation"],[124," USA"],[127," unhappy"],[126," also"],[125," were"],[128," and"],[129," wanted"],[130," to"],[133," own"],[132," their"],[131," start"],[134," separate"],[136,"."],[137," But"],[135," houses"],[138," it"],[139,"'s"],[141," to"],[143," that"],[145," USA"],[144," the"],[142," remember"],[140," important"],[146," is"],[147," a"],[148," big"],[152," with"],[150," strong"],[151," family"],[149," and"],[153," many"],[154," people"],[156," together"],[155," working"],[157,","],[159," it"],[158," so"],[160,"'s"],[163," for"],[162," harder"],[161," much"],[167," to"],[166," family"],[164," the"],[165," whole"],[168," split"],[169," up"],[171,"\n"],[172,"\n"],[170,"."],[174,","],[173,"Still"],[175," just"],[176," like"],[177," the"],[179," Union"],[178," Soviet"],[180,","],[181," it"],[182,"'s"],[184," that"],[183," possible"],[186," day"],[185," one"],[187,","],[188," some"],[190," of"],[191," the"],[189," parts"],[192," USA"],[193," might"],[195," unhappy"],[196," and"],[198," to"],[197," want"],[199," be"],[194," feel"],[201," to"],[200," free"],[202," make"],[204," own"],[203," their"],[206,"."],[208," it"],[207," But"],[209,"'s"],[205," choices"],[212," remember"],[211," to"],[213," that"],[210," important"],[215," USA"],[214," the"],[217," a"],[216," is"],[218," big"],[221," family"],[219," and"],[220," strong"],[223," many"],[222," with"],[224," people"],[225," working"],[226," together"],[227,","],[229," it"],[230,"'s"],[233," for"],[238," split"],[239," up"],[236," family"],[234," the"],[237," to"],[235," whole"],[231," much"],[232," harder"],[228," so"],[241,"\n"],[242,"\n"],[240,"."],[243,"Does"],[253,"?"],[244," that"],[245," help"],[246," explain"],[249," of"],[247," the"],[248," collapse"],[250," the"],[252," Union"],[251," Soviet"]],"tokens":[["Sure",0,1],["!",1,1],[" Imagine",1,1],[" the",0,1],[" Soviet",1,1],[" Union",0,1],[" like",0,1],[" a",0,1],[" big",0,1],[" and",1,1],[" strong",1,1],[" family",1,1],[" with",1,1],[" many",1,1],[" members",1,1],[",",1,1],[" all",1,1],[" living",0,1],[" in",1,1],[" one",1,1],[" big",0,1],[" house",0,1],[".",0,1],[" The",1,1],[" big",1,1],[" house",0,1],[" was",1,1],[" a",1,1],[" country",1,1],[",",0,1],[" and",0,1],[" the",1,1],[" family",0,1],[" members",1,1],[" were",0,1],[" like",1,1],[" different",0,1],[" regions",1,1],[".",1,1],["\n",1,1],["\n",1,1],["Now",1,1],[",",0,1],[" the",1,1],[" collapse",0,1],[" of",1,1],[" the",1,1],[" Soviet",0,1],[" Union",0,0],[" is",1,1],[" like",0,1],[" when",0,1],[" the",0,1],[" family",1,1],[" members",1,0],[" all",0,1],[" decide",0,1],[" to",1,1],[" go",1,1],[" their",0,1],[" own",0,1],[" ways",1,1],[" and",0,1],[" start",1,1],[" their",1,1],[" own",0,1],[" separate",1,1],[" houses",1,1],[".",1,1],[" This",0,1],[" happened",0,1],[" because",0,1],[" the",0,1],[" big",1,1],[" house",1,1],[" (",1,1],["the",0,1],[" Soviet",0,1],[" Union",0,1],[")",0,1],[" was",0,1],[" not",0,1],[" working",1,1],[" well",0,1],[" anymore",1,1],[".",1,1],[" People",1,1],[" in",0,1],[" different",0,1],[" areas",1,1],[" were",0,1],[" unhappy",0,1],[" and",0,1],[" wanted",0,1],[" to",0,1],[" be",1,1],[" free",1,1],[" to",0,1],[" make",0,1],[" different",1,1],[" choices",1,1],[".",1,1],["\n",0,1],["\n",1,0],["So",0,1],[",",1,1],[" if",1,1],[" the",0,1],[" USA",0,1],[" had",1,1],[" a",1,1],[" similar",0,1],[" situation",0,1],[",",1,1],[" it",0,1],[" would",1,1],[" be",0,1],[" like",0,1],[" if",1,1],[" some",1,1],[" family",0,1],[" members",1,1],[" in",0,1],[" the",1,1],[" USA",0,1],[" were",0,1],[" also",1,1],[" unhappy",0,1],[" and",0,1],[" wanted",0,0],[" to",0,0],[" start",1,1],[" their",0,1],[" own",0,0],[" separate",1,0],[" houses",1,0],[".",1,0],[" But",1,1],[" it",1,1],["'s",1,1],[" important",0,1],[" to",0,1],[" remember",0,1],[" that",0,1],[" the",0,1],[" USA",1,1],[" is",1,1],[" a",0,1],[" big",0,1],[" and",1,0],[" strong",1,0],[" family",1,0],[" with",1,0],[" many",1,0],[" people",1,1],[" working",0,1],[" together",0,1],[",",1,1],[" so",1,1],[" it",0,1],["'s",0,1],[" much",1,1],[" harder",0,1],[" for",1,1],[" the",0,1],[" whole",0,1],[" family",1,1],[" to",0,1],[" split",1,1],[" up",1,1],[".",0,1],["\n",1,1],["\n",1,0],["Still",1,1],[",",1,1],[" just",1,1],[" like",0,1],[" the",1,1],[" Soviet",0,1],[" Union",0,0],[",",0,1],[" it",1,1],["'s",0,1],[" possible",0,1],[" that",1,1],[" one",0,1],[" day",0,1],[",",0,1],[" some",0,1],[" parts",1,1],[" of",0,1],[" the",1,1],[" USA",0,1],[" might",0,1],[" feel",0,1],[" unhappy",0,1],[" and",1,1],[" want",0,1],[" to",1,1],[" be",1,1],[" free",1,0],[" to",0,0],[" make",0,0],[" their",0,1],[" own",0,1],[" choices",0,1],[".",0,1],[" But",0,1],[" it",1,0],["'s",1,0],[" important",0,0],[" to",0,0],[" remember",0,0],[" that",0,0],[" the",0,0],[" USA",1,0],[" is",1,0],[" a",0,0],[" big",0,0],[" and",1,0],[" strong",1,0],[" family",1,0],[" with",1,0],[" many",1,0],[" people",1,0],[" working",0,0],[" together",0,0],[",",1,0],[" so",1,0],[" it",0,0],["'s",0,0],[" much",1,0],[" harder",0,0],[" for",1,0],[" the",0,0],[" whole",0,0],[" family",1,0],[" to",0,0],[" split",1,0],[" up",1,0],[".",0,0],["\n",1,0],["\n",1,0],["Does",1,1],[" that",0,1],[" help",1,1],[" explain",1,1],[" the",0,1],[" collapse",1,1],[" of",1,0],[" the",1,0],[" Soviet",0,0],[" Union",0,0],["?",0,1]]},"none":{"z":-0.53,"n":201,"k":47,"n_gen":254,"commits":[[1," Soviet"],[0,"The"],[2," Union"],[3," was"],[4," a"],[5," big"],[6,","],[7," powerful"],[8," country"],[11," like"],[9,","],[10," just"],[12," the"],[14," States"],[13," United"],[15,"."],[16," It"],[17," was"],[19," up"],[18," made"],[20," of"],[22," smaller"],[21," many"],[23," countries"],[24," that"],[26," together"],[25," worked"],[27,"."],[28," But"],[31,","],[30," day"],[29," one"],[33," smaller"],[34," countries"],[32," these"],[36," they"],[35," decided"],[37," wanted"],[38," to"],[39," be"],[40," their"],[41," own"],[42," separate"],[43," countries"],[44,"."],[45," They"],[46," didn"],[47,"'t"],[49," to"],[48," want"],[50," be"],[51," part"],[52," of"],[53," the"],[56," anymore"],[55," Union"],[54," Soviet"],[57,"."],[58,"\n"],[59,"\n"],[60,"This"],[61," happened"],[62," because"],[63," the"],[65," Union"],[64," Soviet"],[66," had"],[68," problems"],[67," many"],[69,","],[70," like"],[73,","],[76,","],[77," and"],[72," problems"],[71," economic"],[74," political"],[75," problems"],[79," problems"],[80,"."],[78," social"],[81," The"],[86," Union"],[84," the"],[85," Soviet"],[82," leaders"],[83," of"],[88,"'t"],[87," couldn"],[91," problems"],[90," these"],[89," solve"],[92,","],[93," and"],[95," people"],[94," the"],[97," the"],[96," in"],[101," unhappy"],[100," were"],[99," Union"],[98," Soviet"],[102,"."],[103," So"],[104,","],[106," smaller"],[107," countries"],[105," the"],[109," to"],[108," decided"],[111," away"],[110," break"],[115," own"],[114," their"],[112," and"],[119,"\n"],[118,"\n"],[117,"."],[116," countries"],[120,"This"],[121," is"],[113," form"],[122," what"],[123," we"],[124," call"],[125," the"],[127," of"],[126," collapse"],[128," the"],[130," Union"],[129," Soviet"],[131,"."],[132," It"],[133,"'s"],[134," like"],[135," a"],[136," big"],[137,","],[138," strong"],[140," breaking"],[141," apart"],[143," smaller"],[142," into"],[144," pieces"],[145,"."],[146,"\n"],[147,"\n"],[149,","],[148,"Now"],[151," the"],[150," about"],[152," USA"],[155,"'s"],[154," it"],[153,","],[156," hard"],[157," to"],[158," say"],[159," if"],[139," country"],[163," happen"],[160," something"],[161," similar"],[162," could"],[164," to"],[166,"."],[167," The"],[168," USA"],[170," a"],[171," big"],[169," is"],[174," country"],[172,","],[165," it"],[173," strong"],[175,","],[177," it"],[181," problems"],[176," but"],[180," many"],[178," also"],[179," has"],[182,","],[183," like"],[184," economic"],[185," problems"],[186,","],[191," social"],[190," and"],[189,","],[187," political"],[188," problems"],[192," problems"],[193,"."],[194," The"],[197," the"],[198," USA"],[196," of"],[195," leaders"],[203," problems"],[202," these"],[204,","],[201," solve"],[200," to"],[199," try"],[205," but"],[206," sometimes"],[209,"'t"],[207," they"],[208," can"],[210,"."],[212,"\n"],[211,"\n"],[214,","],[213,"So"],[215," it"],[216,"'s"],[218," to"],[217," hard"],[220," if"],[219," say"],[223," could"],[221," something"],[222," similar"],[224," happen"],[225," to"],[226," the"],[227," USA"],[253,"."],[230," it"],[231,"'s"],[228,","],[229," but"],[233,"."],[232," possible"],[234," It"],[235,"'s"],[236," like"],[252," pieces"],[251," smaller"],[250," into"],[249," apart"],[248," break"],[246," it"],[245,","],[247," can"],[240,","],[241," if"],[237," a"],[238," big"],[242," it"],[243," gets"],[239," puzzle"],[244," damaged"]],"tokens":[["The",0,1],[" Soviet",0,1],[" Union",0,1],[" was",0,1],[" a",0,1],[" big",1,1],[",",0,1],[" powerful",0,1],[" country",0,1],[",",0,1],[" just",0,1],[" like",0,1],[" the",1,1],[" United",1,1],[" States",0,1],[".",1,1],[" It",0,1],[" was",0,1],[" made",1,1],[" up",0,1],[" of",0,1],[" many",1,1],[" smaller",0,1],[" countries",0,1],[" that",1,1],[" worked",0,1],[" together",0,1],[".",0,1],[" But",0,1],[" one",0,1],[" day",0,1],[",",0,1],[" these",0,1],[" smaller",0,1],[" countries",0,1],[" decided",0,1],[" they",1,1],[" wanted",0,1],[" to",1,1],[" be",1,1],[" their",0,1],[" own",0,1],[" separate",1,1],[" countries",0,1],[".",0,1],[" They",0,1],[" didn",1,1],["'t",1,1],[" want",0,1],[" to",0,1],[" be",1,1],[" part",0,1],[" of",0,1],[" the",0,1],[" Soviet",0,1],[" Union",0,1],[" anymore",1,1],[".",0,1],["\n",0,1],["\n",1,1],["This",1,1],[" happened",0,1],[" because",1,1],[" the",0,1],[" Soviet",0,1],[" Union",0,0],[" had",1,1],[" many",0,1],[" problems",1,1],[",",0,1],[" like",0,1],[" economic",0,1],[" problems",0,1],[",",0,1],[" political",0,1],[" problems",0,1],[",",0,1],[" and",0,1],[" social",0,1],[" problems",0,1],[".",1,1],[" The",0,1],[" leaders",0,1],[" of",0,1],[" the",0,1],[" Soviet",0,0],[" Union",0,0],[" couldn",0,1],["'t",0,1],[" solve",0,1],[" these",0,1],[" problems",0,1],[",",0,1],[" and",0,0],[" the",1,1],[" people",0,1],[" in",1,1],[" the",0,1],[" Soviet",0,1],[" Union",0,0],[" were",0,1],[" unhappy",0,1],[".",0,1],[" So",0,1],[",",0,1],[" the",0,1],[" smaller",0,1],[" countries",0,1],[" decided",0,0],[" to",0,1],[" break",0,1],[" away",0,1],[" and",0,1],[" form",0,1],[" their",0,1],[" own",0,1],[" countries",0,1],[".",1,1],["\n",0,1],["\n",1,0],["This",1,0],[" is",0,1],[" what",0,1],[" we",0,1],[" call",0,1],[" the",0,1],[" collapse",0,1],[" of",1,1],[" the",1,1],[" Soviet",0,0],[" Union",0,0],[".",0,1],[" It",1,1],["'s",0,1],[" like",0,1],[" a",0,1],[" big",0,1],[",",0,0],[" strong",0,1],[" country",1,1],[" breaking",0,1],[" apart",0,1],[" into",0,1],[" smaller",1,1],[" pieces",0,1],[".",0,1],["\n",0,1],["\n",1,0],["Now",1,1],[",",0,1],[" about",0,1],[" the",1,1],[" USA",0,1],[",",0,1],[" it",0,1],["'s",0,1],[" hard",0,1],[" to",0,1],[" say",1,1],[" if",0,1],[" something",0,1],[" similar",0,1],[" could",0,1],[" happen",1,1],[" to",0,1],[" it",0,1],[".",0,1],[" The",1,1],[" USA",0,1],[" is",1,1],[" a",0,1],[" big",0,1],[",",0,0],[" strong",0,0],[" country",1,0],[",",1,1],[" but",0,1],[" it",0,1],[" also",0,1],[" has",0,1],[" many",0,1],[" problems",0,1],[",",0,0],[" like",0,0],[" economic",0,0],[" problems",0,0],[",",0,0],[" political",0,0],[" problems",0,0],[",",0,0],[" and",0,0],[" social",0,0],[" problems",0,0],[".",1,0],[" The",0,0],[" leaders",0,0],[" of",0,0],[" the",0,0],[" USA",0,1],[" try",1,1],[" to",0,1],[" solve",1,1],[" these",0,1],[" problems",0,0],[",",0,0],[" but",1,1],[" sometimes",0,1],[" they",1,1],[" can",0,1],["'t",1,1],[".",0,1],["\n",1,1],["\n",1,0],["So",0,1],[",",1,1],[" it",0,1],["'s",0,0],[" hard",0,0],[" to",0,0],[" say",1,0],[" if",0,0],[" something",0,0],[" similar",0,0],[" could",0,0],[" happen",1,0],[" to",0,0],[" the",1,1],[" USA",1,1],[",",0,0],[" but",1,1],[" it",0,0],["'s",0,1],[" possible",0,1],[".",1,1],[" It",0,1],["'s",0,0],[" like",0,0],[" a",0,0],[" big",0,0],[" puzzle",0,1],[",",0,1],[" if",0,1],[" it",0,1],[" gets",0,1],[" damaged",0,1],[",",0,1],[" it",0,1],[" can",0,1],[" break",0,1],[" apart",0,1],[" into",0,1],[" smaller",1,0],[" pieces",0,0],[".",0,0]]}}},{"task":"Long-form QA (ELI5)","question":"how do we diferentiate the frequency of a note from the sound that characterize a certain instirment? Why can I tell an A on a cello apart from an A on a piano? Please explain like I'm five.","arms":{"ours_d4":{"z":5.36,"n":201,"k":82,"n_gen":254,"commits":[[1,"!"],[0,"Sure"],[2," Imagine"],[4," have"],[3," you"],[5," two"],[6," toys"],[10," and"],[11," a"],[8," a"],[7,":"],[12," piano"],[9," cello"],[13,"."],[14," Both"],[15," can"],[17," the"],[18," same"],[16," play"],[20,","],[19," note"],[21," called"],[22," an"],[23," \""],[24,"A"],[25,".\""],[27,","],[26," Now"],[30," talk"],[31," about"],[28," let"],[29,"'s"],[32," how"],[33," we"],[35," tell"],[34," can"],[40,"\n"],[39,"\n"],[38,"."],[36," them"],[37," apart"],[42,","],[41,"First"],[43," think"],[45," the"],[44," about"],[46," pitch"],[48," the"],[47," of"],[50,"."],[49," sound"],[54," a"],[51," A"],[53," plays"],[55," lower"],[52," cello"],[56," pitch"],[58," a"],[59," piano"],[57," than"],[60,"."],[61," This"],[62," is"],[63," because"],[66," is"],[65," cello"],[64," a"],[68," than"],[69," a"],[70," piano"],[71,","],[72," and"],[73," the"],[74," longer"],[67," longer"],[75," the"],[76," instrument"],[77,","],[78," the"],[79," lower"],[80," the"],[81," pitch"],[82,"."],[83," So"],[84,","],[87," play"],[86," you"],[88," an"],[93,","],[89," A"],[90," on"],[92," cello"],[91," a"],[94," it"],[85," when"],[95," sounds"],[97," than"],[100," play"],[99," you"],[98," when"],[108,"\n"],[102," A"],[103," on"],[106,"."],[105," piano"],[101," an"],[104," a"],[107,"\n"],[110,","],[109,"Now"],[113," talk"],[111," let"],[112,"'s"],[114," about"],[115," the"],[116," sound"],[96," lower"],[118,"."],[117," itself"],[122," a"],[120," sound"],[119," The"],[121," of"],[124," is"],[123," cello"],[125," usually"],[127," and"],[126," richer"],[137," This"],[136,"."],[134," a"],[135," piano"],[132," sound"],[131," the"],[130," than"],[133," of"],[138," is"],[139," because"],[128," more"],[141," strings"],[140," the"],[143," a"],[144," cello"],[145," are"],[147," and"],[146," thicker"],[155," piano"],[154," a"],[156,"."],[150," than"],[151," the"],[148," more"],[142," of"],[153," of"],[152," keys"],[149," robust"],[157," The"],[158," strings"],[159," produce"],[129," powerful"],[160," a"],[165," sound"],[163," more"],[164," resonant"],[162," and"],[168," the"],[166,","],[169," keys"],[171," a"],[172," piano"],[173," produce"],[174," a"],[170," of"],[182,"\n"],[179," sound"],[180,"."],[181,"\n"],[184,","],[183,"So"],[178," delicate"],[177," more"],[175," softer"],[187," play"],[186," you"],[189," A"],[188," an"],[190," on"],[191," a"],[185," when"],[176,","],[167," whereas"],[161," deeper"],[194," it"],[193,","],[192," cello"],[195," sounds"],[196," deeper"],[197," and"],[208," piano"],[207," a"],[203," play"],[202," you"],[206," on"],[205," A"],[204," an"],[201," when"],[200," than"],[209,"."],[198," more"],[210," That"],[211,"'s"],[212," why"],[214," can"],[213," you"],[215," tell"],[219," the"],[218," between"],[217," difference"],[216," the"],[220," two"],[199," intense"],[223," they"],[221," even"],[222," though"],[224," play"],[225," the"],[226," same"],[227," note"],[253,"."],[228,"."],[235," sound"],[231," pitch"],[232," and"],[233," the"],[229," The"],[230," lower"],[252," piano"],[251," a"],[249," A"],[250," on"],[248," an"],[247," from"],[242," A"],[245," cello"],[244," a"],[243," on"],[241," an"],[246," apart"],[240," tell"],[236," are"],[237," what"],[239," you"],[238," help"],[234," richer"]],"tokens":[["Sure",0,1],["!",1,1],[" Imagine",1,1],[" you",0,1],[" have",1,1],[" two",1,1],[" toys",0,1],[":",0,1],[" a",0,1],[" cello",1,1],[" and",1,1],[" a",0,1],[" piano",0,1],[".",0,1],[" Both",0,1],[" can",1,1],[" play",1,1],[" the",1,1],[" same",0,1],[" note",0,1],[",",0,1],[" called",1,1],[" an",1,1],[" \"",1,1],["A",0,1],[".\"",0,1],[" Now",0,1],[",",0,1],[" let",0,1],["'s",0,1],[" talk",1,1],[" about",0,1],[" how",1,1],[" we",0,1],[" can",0,1],[" tell",0,1],[" them",1,1],[" apart",0,1],[".",0,1],["\n",1,1],["\n",1,1],["First",0,1],[",",0,1],[" think",1,1],[" about",1,1],[" the",0,1],[" pitch",1,1],[" of",1,1],[" the",0,1],[" sound",0,1],[".",0,1],[" A",1,1],[" cello",0,1],[" plays",1,1],[" a",0,1],[" lower",1,1],[" pitch",0,1],[" than",0,1],[" a",1,1],[" piano",0,1],[".",0,0],[" This",1,1],[" is",1,1],[" because",0,1],[" a",0,1],[" cello",0,1],[" is",1,1],[" longer",0,1],[" than",1,1],[" a",0,1],[" piano",0,0],[",",1,1],[" and",0,1],[" the",1,1],[" longer",1,1],[" the",0,1],[" instrument",1,1],[",",0,1],[" the",0,1],[" lower",0,1],[" the",0,1],[" pitch",1,1],[".",1,1],[" So",0,1],[",",0,1],[" when",0,1],[" you",0,1],[" play",1,1],[" an",0,1],[" A",1,1],[" on",0,1],[" a",0,1],[" cello",1,1],[",",0,1],[" it",1,1],[" sounds",0,1],[" lower",0,1],[" than",1,1],[" when",0,1],[" you",1,1],[" play",1,0],[" an",0,0],[" A",1,0],[" on",0,0],[" a",0,0],[" piano",0,1],[".",0,0],["\n",0,1],["\n",1,0],["Now",1,1],[",",0,1],[" let",0,1],["'s",0,0],[" talk",1,0],[" about",0,0],[" the",0,1],[" sound",0,1],[" itself",0,1],[".",0,1],[" The",0,1],[" sound",0,1],[" of",0,1],[" a",1,1],[" cello",0,1],[" is",1,0],[" usually",1,1],[" richer",0,1],[" and",1,1],[" more",0,1],[" powerful",0,1],[" than",0,1],[" the",0,1],[" sound",0,1],[" of",0,1],[" a",1,0],[" piano",0,1],[".",0,0],[" This",1,0],[" is",1,0],[" because",0,0],[" the",0,1],[" strings",1,1],[" of",1,1],[" a",0,1],[" cello",0,0],[" are",0,1],[" thicker",0,1],[" and",1,1],[" more",1,1],[" robust",1,1],[" than",0,1],[" the",1,1],[" keys",0,1],[" of",0,1],[" a",1,1],[" piano",0,0],[".",0,0],[" The",0,1],[" strings",1,1],[" produce",1,1],[" a",0,1],[" deeper",0,1],[" and",1,1],[" more",0,1],[" resonant",0,1],[" sound",1,1],[",",0,1],[" whereas",1,1],[" the",0,1],[" keys",0,1],[" of",0,0],[" a",1,0],[" piano",0,0],[" produce",1,1],[" a",1,1],[" softer",1,1],[",",0,1],[" more",0,1],[" delicate",1,1],[" sound",1,1],[".",0,1],["\n",0,1],["\n",1,0],["So",0,1],[",",1,1],[" when",0,1],[" you",0,0],[" play",1,0],[" an",0,0],[" A",1,0],[" on",0,0],[" a",0,0],[" cello",1,0],[",",0,0],[" it",1,0],[" sounds",0,0],[" deeper",1,1],[" and",1,1],[" more",0,0],[" intense",1,1],[" than",1,1],[" when",0,1],[" you",1,0],[" play",1,0],[" an",0,0],[" A",1,0],[" on",0,0],[" a",0,0],[" piano",0,0],[".",0,0],[" That",1,1],["'s",1,1],[" why",1,1],[" you",0,1],[" can",0,1],[" tell",0,1],[" the",0,1],[" difference",0,1],[" between",0,1],[" the",1,1],[" two",1,1],[" even",1,1],[" though",0,1],[" they",0,1],[" play",1,1],[" the",0,1],[" same",0,0],[" note",0,0],[".",0,1],[" The",0,1],[" lower",0,1],[" pitch",0,1],[" and",1,1],[" the",1,1],[" richer",0,1],[" sound",0,1],[" are",0,1],[" what",1,1],[" help",0,1],[" you",1,1],[" tell",1,1],[" an",0,1],[" A",1,1],[" on",0,0],[" a",0,0],[" cello",1,0],[" apart",0,1],[" from",1,1],[" an",0,1],[" A",1,1],[" on",0,0],[" a",0,0],[" piano",0,0],[".",0,0]]},"none":{"z":0.04,"n":199,"k":50,"n_gen":254,"commits":[[0,"Imagine"],[1," you"],[2," have"],[3," two"],[9," and"],[12,"."],[10," a"],[7," a"],[11," piano"],[8," cello"],[4," toy"],[6,":"],[5," instruments"],[15," play"],[14," you"],[13," When"],[16," the"],[18," note"],[17," same"],[19,","],[21,"'s"],[20," let"],[22," say"],[23," an"],[25,"A"],[24," \""],[28," both"],[27," on"],[26,",\""],[29," instruments"],[30,","],[31," the"],[34," the"],[32," frequency"],[33," of"],[37," the"],[38," same"],[36," is"],[35," note"],[39,"."],[41,","],[42," the"],[40," However"],[43," sound"],[45," hear"],[44," you"],[46," is"],[47," different"],[48," because"],[50," the"],[49," of"],[51," way"],[52," each"],[53," instrument"],[54," makes"],[56," sound"],[57,"."],[59,"\n"],[58,"\n"],[55," the"],[60,"The"],[61," cello"],[63," a"],[62," is"],[65,","],[64," big"],[67," instrument"],[68," with"],[69," a"],[70," long"],[71,","],[74,"."],[75," When"],[76," you"],[66," heavy"],[73," string"],[72," thick"],[77," pl"],[78,"uck"],[80," string"],[79," the"],[81,","],[82," it"],[84," a"],[83," makes"],[86,","],[88," sound"],[85," deep"],[89,"."],[87," resonant"],[91," sound"],[92," is"],[90," The"],[94," and"],[93," rich"],[95," full"],[96,","],[97," like"],[98," a"],[99," big"],[100,","],[103,"."],[106,"On"],[105,"\n"],[104,"\n"],[107," the"],[110,","],[108," other"],[109," hand"],[112," piano"],[114," a"],[113," is"],[116,","],[118," instrument"],[119," with"],[111," the"],[117," lighter"],[115," smaller"],[120," keys"],[121," that"],[122," hit"],[123," h"],[124,"ammers"],[127," strings"],[126," strike"],[125," to"],[101," booming"],[102," voice"],[128,"."],[130," sound"],[129," The"],[131," is"],[133," and"],[136,","],[138," a"],[137," like"],[134," more"],[132," brighter"],[140,","],[143,"."],[144,"\n"],[145,"\n"],[146,"So"],[147,","],[148," even"],[149," though"],[150," the"],[151," frequency"],[152," of"],[153," the"],[154," note"],[156," the"],[157," same"],[155," is"],[158,","],[159," the"],[142," voice"],[135," delicate"],[139," soft"],[141," gentle"],[160," sound"],[162," hear"],[161," you"],[165," because"],[163," is"],[164," different"],[167," the"],[166," of"],[169," each"],[170," instrument"],[168," way"],[173," sound"],[174,"."],[172," the"],[171," makes"],[177," why"],[178," you"],[179," can"],[180," tell"],[181," an"],[187," from"],[186," apart"],[183," on"],[182," A"],[190," on"],[189," A"],[188," an"],[185," cello"],[184," a"],[191," a"],[175," That"],[176,"'s"],[192," piano"],[194,"\n"],[195,"\n"],[193,"."],[196,"In"],[198,","],[199," the"],[203," note"],[200," frequency"],[201," of"],[202," a"],[204," is"],[197," summary"],[213," sound"],[212," the"],[210,","],[205," the"],[206," same"],[211," but"],[209," instruments"],[215," hear"],[214," you"],[216," is"],[218," because"],[217," different"],[219," of"],[220," the"],[221," way"],[222," each"],[223," instrument"],[208," both"],[207," for"],[226," sound"],[224," makes"],[225," the"],[227,"."],[253,"."],[229," cello"],[228," The"],[252," sound"],[231," a"],[233,","],[243," piano"],[242," the"],[245," a"],[240,","],[239," sound"],[247,","],[241," while"],[249,","],[250," and"],[235,","],[236," and"],[237," more"],[238," resonant"],[248," lighter"],[246," smaller"],[251," brighter"],[234," heavier"],[232," bigger"],[244," has"],[230," has"]],"tokens":[["Imagine",0,1],[" you",1,1],[" have",0,1],[" two",1,1],[" toy",0,1],[" instruments",0,1],[":",0,1],[" a",1,1],[" cello",1,1],[" and",1,1],[" a",0,1],[" piano",0,1],[".",0,1],[" When",0,1],[" you",0,1],[" play",0,1],[" the",0,1],[" same",0,1],[" note",0,1],[",",0,1],[" let",0,1],["'s",0,1],[" say",0,1],[" an",0,1],[" \"",0,1],["A",0,1],[",\"",0,1],[" on",1,1],[" both",0,1],[" instruments",1,1],[",",0,1],[" the",0,1],[" frequency",0,1],[" of",0,1],[" the",0,1],[" note",0,1],[" is",1,1],[" the",0,1],[" same",0,1],[".",0,1],[" However",1,1],[",",1,1],[" the",0,1],[" sound",0,1],[" you",0,1],[" hear",0,1],[" is",0,1],[" different",0,1],[" because",0,1],[" of",0,1],[" the",0,1],[" way",1,1],[" each",1,1],[" instrument",1,1],[" makes",0,1],[" the",0,1],[" sound",0,1],[".",0,1],["\n",0,1],["\n",1,1],["The",0,1],[" cello",0,1],[" is",1,1],[" a",0,1],[" big",0,1],[",",0,1],[" heavy",0,1],[" instrument",0,1],[" with",0,1],[" a",0,1],[" long",0,1],[",",0,1],[" thick",0,1],[" string",0,1],[".",1,1],[" When",0,1],[" you",0,0],[" pl",0,1],["uck",0,1],[" the",0,1],[" string",0,1],[",",0,1],[" it",1,1],[" makes",0,1],[" a",1,1],[" deep",0,1],[",",0,1],[" resonant",0,1],[" sound",0,1],[".",0,1],[" The",0,1],[" sound",0,1],[" is",1,1],[" rich",1,1],[" and",0,1],[" full",0,1],[",",0,1],[" like",0,1],[" a",1,1],[" big",0,1],[",",0,0],[" booming",0,1],[" voice",1,1],[".",0,1],["\n",0,1],["\n",1,0],["On",1,1],[" the",1,1],[" other",0,1],[" hand",1,1],[",",0,1],[" the",0,1],[" piano",0,1],[" is",0,1],[" a",1,1],[" smaller",1,1],[",",0,1],[" lighter",0,1],[" instrument",1,1],[" with",0,1],[" keys",0,1],[" that",0,1],[" hit",0,1],[" h",0,1],["ammers",1,1],[" to",0,1],[" strike",0,1],[" strings",0,1],[".",0,1],[" The",0,1],[" sound",0,0],[" is",1,0],[" brighter",1,1],[" and",0,1],[" more",0,1],[" delicate",1,1],[",",0,1],[" like",0,1],[" a",1,0],[" soft",0,1],[",",0,1],[" gentle",1,1],[" voice",0,1],[".",0,1],["\n",0,0],["\n",1,0],["So",0,1],[",",1,1],[" even",0,1],[" though",0,1],[" the",1,1],[" frequency",1,1],[" of",0,0],[" the",0,0],[" note",0,0],[" is",1,0],[" the",0,0],[" same",0,0],[",",0,1],[" the",0,1],[" sound",0,0],[" you",0,0],[" hear",0,0],[" is",0,0],[" different",0,0],[" because",0,0],[" of",0,0],[" the",0,0],[" way",1,0],[" each",1,0],[" instrument",1,0],[" makes",0,0],[" the",0,0],[" sound",0,0],[".",0,0],[" That",0,1],["'s",1,1],[" why",1,1],[" you",0,1],[" can",0,1],[" tell",0,1],[" an",0,1],[" A",1,1],[" on",0,1],[" a",0,1],[" cello",1,1],[" apart",0,1],[" from",1,1],[" an",0,1],[" A",1,1],[" on",0,0],[" a",0,0],[" piano",0,1],[".",0,0],["\n",0,1],["\n",1,0],["In",0,1],[" summary",0,1],[",",0,1],[" the",0,1],[" frequency",0,0],[" of",0,0],[" a",0,1],[" note",0,1],[" is",0,1],[" the",0,0],[" same",0,0],[" for",1,1],[" both",0,1],[" instruments",0,1],[",",0,0],[" but",0,1],[" the",0,1],[" sound",0,1],[" you",0,0],[" hear",0,0],[" is",0,0],[" different",0,0],[" because",0,0],[" of",0,0],[" the",0,0],[" way",1,0],[" each",1,0],[" instrument",1,0],[" makes",0,0],[" the",0,0],[" sound",0,0],[".",0,0],[" The",0,0],[" cello",0,1],[" has",1,1],[" a",0,1],[" bigger",1,1],[",",1,1],[" heavier",0,1],[",",0,1],[" and",0,1],[" more",0,1],[" resonant",0,1],[" sound",1,1],[",",0,1],[" while",0,1],[" the",0,1],[" piano",0,1],[" has",1,1],[" a",0,1],[" smaller",0,1],[",",0,0],[" lighter",0,0],[",",0,1],[" and",0,1],[" brighter",1,1],[" sound",1,1],[".",1,1]]}}},{"task":"Finance QA (FiQA)","question":"Is it impossible to get a home loan with a poor credit history after a divorce?","arms":{"ours_d4":{"z":6.35,"n":198,"k":88,"n_gen":254,"commits":[[1,"'s"],[0,"It"],[2," not"],[3," impossible"],[10," a"],[14," after"],[15," a"],[16," divorce"],[4," to"],[11," poor"],[12," credit"],[13," history"],[6," a"],[8," loan"],[7," home"],[9," with"],[5," get"],[18," but"],[17,","],[25," Lenders"],[24,"."],[19," it"],[21," significantly"],[22," more"],[23," challenging"],[20,"'s"],[28," credit"],[29," history"],[27," consider"],[26," heavily"],[30," in"],[31," making"],[32," decisions"],[38," credit"],[37," poor"],[36," a"],[35," having"],[33,","],[34," and"],[40," can"],[39," history"],[42," impact"],[41," negatively"],[43," your"],[44," chances"],[45," of"],[47," approved"],[50," home"],[49," a"],[48," for"],[51," loan"],[52,"."],[46," being"],[54,","],[53," However"],[55," lenders"],[59," factors"],[57," consider"],[58," other"],[61," as"],[60," such"],[56," also"],[62," income"],[63,","],[69," and"],[68,","],[65,"-to"],[66,"-income"],[67," ratio"],[64," debt"],[72,"."],[70," credit"],[73,"\n"],[74,"\n"],[76," a"],[77," divorce"],[75,"After"],[78,","],[71," score"],[80,"'s"],[79," it"],[82," to"],[81," essential"],[83," establish"],[84," a"],[86," credit"],[85," new"],[88,","],[87," history"],[89," such"],[90," as"],[91," opening"],[92," a"],[93," new"],[94," credit"],[95," card"],[96,","],[97," paying"],[98," off"],[101,","],[102," and"],[99," existing"],[100," debt"],[105," payments"],[103," making"],[104," timely"],[107," This"],[106,"."],[109," help"],[108," can"],[112," credit"],[111," your"],[113," score"],[110," improve"],[115," time"],[114," over"],[116," and"],[119," chances"],[117," increase"],[120," of"],[125," home"],[124," a"],[126," loan"],[123," for"],[122," approved"],[127,"."],[121," being"],[118," your"],[128," Additionally"],[129,","],[131," may"],[130," you"],[133," able"],[134," to"],[132," be"],[135," get"],[136," a"],[137," co"],[138,"-sign"],[139,"er"],[140," to"],[141," help"],[143," the"],[144," risk"],[150,"\n"],[149,"\n"],[148,"."],[145," for"],[146," the"],[147," lender"],[151,"It"],[152,"'s"],[153," also"],[155," to"],[154," crucial"],[142," reduce"],[156," review"],[158," credit"],[157," your"],[159," report"],[160," and"],[161," dispute"],[162," any"],[163," inaccuracies"],[164," or"],[165," errors"],[166,"."],[168," you"],[167," If"],[169,"'re"],[171," to"],[173," a"],[170," trying"],[177," a"],[178," divorce"],[176," after"],[179,","],[174," new"],[172," establish"],[175," credit"],[183," to"],[180," it"],[181,"'s"],[182," essential"],[189," and"],[184," keep"],[185," your"],[186," credit"],[188," low"],[187," utilization"],[190," avoid"],[191," taking"],[192," on"],[193," excessive"],[195,"."],[194," debt"],[197,"\n"],[196,"\n"],[199," summary"],[198,"In"],[200,","],[218," divorce"],[217," a"],[216," after"],[213," poor"],[212," a"],[214," credit"],[215," history"],[211," with"],[209," home"],[210," loan"],[208," a"],[202," it"],[201," while"],[219,","],[206," to"],[207," get"],[204," not"],[203,"'s"],[205," impossible"],[220," it"],[221,"'s"],[223," challenging"],[222," more"],[253,"."],[224,"."],[251," home"],[252," loan"],[250," a"],[248," approved"],[249," for"],[245," chances"],[246," of"],[247," being"],[243," increase"],[244," your"],[225," By"],[242," can"],[240,","],[241," you"],[228," to"],[227," steps"],[226," taking"],[231," new"],[230," a"],[232," credit"],[233," history"],[234," and"],[229," establish"],[235," improve"],[236," your"],[237," overall"],[238," financial"],[239," stability"]],"tokens":[["It",1,1],["'s",0,1],[" not",1,1],[" impossible",0,1],[" to",0,1],[" get",0,1],[" a",0,1],[" home",0,1],[" loan",0,1],[" with",0,1],[" a",1,1],[" poor",1,1],[" credit",0,1],[" history",0,1],[" after",1,1],[" a",1,1],[" divorce",1,1],[",",0,1],[" but",0,1],[" it",0,1],["'s",0,1],[" significantly",0,1],[" more",0,1],[" challenging",1,1],[".",0,1],[" Lenders",0,1],[" heavily",0,1],[" consider",0,1],[" credit",1,1],[" history",1,1],[" in",1,1],[" making",1,1],[" decisions",1,1],[",",0,1],[" and",0,1],[" having",0,1],[" a",1,1],[" poor",1,1],[" credit",0,0],[" history",0,0],[" can",0,1],[" negatively",1,1],[" impact",0,1],[" your",1,1],[" chances",1,1],[" of",0,1],[" being",0,1],[" approved",1,1],[" for",0,1],[" a",0,1],[" home",1,1],[" loan",0,0],[".",0,1],[" However",0,1],[",",1,1],[" lenders",1,1],[" also",0,1],[" consider",1,1],[" other",0,1],[" factors",0,1],[" such",0,1],[" as",1,1],[" income",0,1],[",",1,1],[" debt",0,1],["-to",0,1],["-income",1,1],[" ratio",0,1],[",",1,1],[" and",0,1],[" credit",1,1],[" score",0,1],[".",1,1],["\n",1,1],["\n",1,1],["After",1,1],[" a",0,1],[" divorce",0,1],[",",0,0],[" it",0,1],["'s",0,1],[" essential",1,1],[" to",1,1],[" establish",1,1],[" a",1,1],[" new",1,1],[" credit",0,1],[" history",0,1],[",",1,1],[" such",1,1],[" as",0,1],[" opening",1,1],[" a",0,1],[" new",1,1],[" credit",0,0],[" card",0,1],[",",1,1],[" paying",1,1],[" off",1,1],[" existing",0,1],[" debt",1,1],[",",0,1],[" and",0,1],[" making",0,1],[" timely",0,1],[" payments",0,1],[".",0,1],[" This",1,1],[" can",0,1],[" help",1,1],[" improve",0,1],[" your",0,1],[" credit",1,1],[" score",0,1],[" over",0,1],[" time",1,1],[" and",1,1],[" increase",1,1],[" your",0,1],[" chances",0,1],[" of",0,0],[" being",0,0],[" approved",1,0],[" for",0,0],[" a",0,0],[" home",1,0],[" loan",0,0],[".",0,0],[" Additionally",1,1],[",",0,1],[" you",0,1],[" may",0,1],[" be",0,1],[" able",0,1],[" to",1,1],[" get",1,1],[" a",0,0],[" co",1,1],["-sign",0,1],["er",0,1],[" to",1,1],[" help",0,1],[" reduce",0,1],[" the",0,1],[" risk",0,1],[" for",1,1],[" the",1,1],[" lender",0,1],[".",0,1],["\n",0,1],["\n",1,0],["It",1,1],["'s",0,1],[" also",0,1],[" crucial",1,1],[" to",0,1],[" review",1,1],[" your",0,1],[" credit",1,1],[" report",0,1],[" and",1,1],[" dispute",1,1],[" any",1,1],[" inaccuracies",1,1],[" or",1,1],[" errors",1,1],[".",0,1],[" If",0,1],[" you",0,1],["'re",1,1],[" trying",1,1],[" to",1,1],[" establish",0,1],[" a",1,0],[" new",1,0],[" credit",0,0],[" after",1,1],[" a",1,1],[" divorce",1,0],[",",0,0],[" it",0,0],["'s",0,0],[" essential",1,0],[" to",1,0],[" keep",1,1],[" your",1,1],[" credit",1,1],[" utilization",1,1],[" low",0,1],[" and",0,1],[" avoid",0,1],[" taking",1,1],[" on",0,1],[" excessive",1,1],[" debt",0,1],[".",1,1],["\n",0,1],["\n",1,0],["In",0,1],[" summary",0,1],[",",0,1],[" while",0,1],[" it",0,1],["'s",0,1],[" not",1,1],[" impossible",0,0],[" to",0,0],[" get",0,0],[" a",0,0],[" home",0,0],[" loan",0,0],[" with",0,0],[" a",1,0],[" poor",1,0],[" credit",0,0],[" history",0,0],[" after",1,0],[" a",1,0],[" divorce",1,0],[",",0,0],[" it",0,0],["'s",0,0],[" more",0,1],[" challenging",0,1],[".",0,0],[" By",1,1],[" taking",0,1],[" steps",0,1],[" to",1,1],[" establish",0,1],[" a",1,0],[" new",1,0],[" credit",0,0],[" history",0,0],[" and",0,1],[" improve",1,1],[" your",0,1],[" overall",1,1],[" financial",0,1],[" stability",1,1],[",",1,1],[" you",1,1],[" can",0,1],[" increase",0,1],[" your",0,1],[" chances",0,0],[" of",0,0],[" being",0,0],[" approved",1,0],[" for",0,0],[" a",0,0],[" home",1,0],[" loan",0,0],[".",0,0]]},"none":{"z":0.73,"n":237,"k":64,"n_gen":254,"commits":[[0,"While"],[1," it"],[3," be"],[4," challenging"],[7," a"],[8," home"],[9," loan"],[5," to"],[10," with"],[12," poor"],[11," a"],[13," credit"],[14," history"],[17," divorce"],[16," a"],[18,","],[15," after"],[19," it"],[21," not"],[22," impossible"],[23,"."],[24," Lenders"],[20,"'s"],[6," get"],[2," can"],[26," consider"],[28," factors"],[30," including"],[29,","],[27," various"],[25," will"],[31," your"],[34,","],[32," credit"],[35," income"],[36,","],[33," score"],[39,","],[40," and"],[37," debt"],[38," levels"],[43,","],[41," financial"],[48,"."],[46," a"],[47," decision"],[45," making"],[44," when"],[49," Here"],[50," are"],[51," some"],[56," chances"],[55," your"],[53," to"],[57,":"],[58,"\n"],[59,"\n"],[60,"1"],[61,"."],[62," **"],[54," improve"],[52," steps"],[42," stability"],[63,"Fix"],[67,"**:"],[65," credit"],[64," your"],[66," score"],[69," off"],[68," Pay"],[70," high"],[71,"-interest"],[73,","],[72," debt"],[78,","],[79," and"],[75," your"],[76," credit"],[77," utilization"],[74," lower"],[80," avoid"],[81," opening"],[83," credit"],[82," new"],[84," accounts"],[85,"."],[87,"2"],[86,"\n"],[88,"."],[89," **"],[94,"**:"],[91,"ate"],[90,"Demonstr"],[92," financial"],[93," stability"],[95," Show"],[99," a"],[98," have"],[97," you"],[96," that"],[101," income"],[102,","],[100," stable"],[104," savings"],[105,","],[106," and"],[107," a"],[103," sufficient"],[114,"."],[113,"3"],[115," **"],[112,"\n"],[111,"."],[110," plan"],[108," solid"],[109," financial"],[120,"**:"],[121," Lenders"],[117," a"],[116,"Get"],[118," co"],[122," may"],[119,"igner"],[125," co"],[124," a"],[123," require"],[126,"igner"],[127,","],[129," can"],[128," which"],[134," and"],[130," help"],[133," risk"],[132," the"],[131," reduce"],[135," increase"],[137," chances"],[136," your"],[138," of"],[140," approved"],[145," **"],[144,"."],[143,"4"],[142,"\n"],[141,"."],[139," getting"],[150,"**:"],[149," lenders"],[147," with"],[148," multiple"],[146,"Check"],[152,"'t"],[151," Don"],[156," one"],[157," lender"],[154," on"],[153," rely"],[155," just"],[158,";"],[159," they"],[162," different"],[160," may"],[161," have"],[164," and"],[163," requirements"],[167,"."],[168,"\n"],[169,"5"],[170,"."],[171," **"],[166," rates"],[165," interest"],[176,"**:"],[173," a"],[172,"Consider"],[175," loan"],[174," FHA"],[177," The"],[179," Housing"],[178," Federal"],[183,"HA"],[181," ("],[182,"F"],[184,")"],[180," Administration"],[185," offers"],[186," loans"],[187," with"],[191," requirements"],[190," score"],[189," credit"],[188," lower"],[192," than"],[193," conventional"],[194," loans"],[196,"\n"],[195,"."],[199," **"],[197,"6"],[198,"."],[204,"**:"],[201," a"],[205," A"],[208," can"],[210," you"],[209," help"],[202," financial"],[206," financial"],[203," advisor"],[207," advisor"],[200,"Consult"],[212," your"],[211," understand"],[213," options"],[214," and"],[215," develop"],[216," a"],[219," improve"],[218," to"],[220," your"],[217," plan"],[223,"."],[221," credit"],[222," score"],[224,"\n"],[225,"\n"],[253,"."],[229," steps"],[226,"By"],[228," these"],[227," taking"],[249," history"],[248," credit"],[252," divorce"],[251," a"],[247," poor"],[250," after"],[246," a"],[245," with"],[230," and"],[243," home"],[244," loan"],[242," a"],[239," chances"],[240," of"],[238," your"],[234,","],[235," you"],[236," can"],[237," increase"],[241," getting"],[231," demonstrating"],[232," financial"],[233," stability"]],"tokens":[["While",0,1],[" it",0,1],[" can",0,1],[" be",0,1],[" challenging",1,1],[" to",1,1],[" get",0,1],[" a",0,1],[" home",0,1],[" loan",0,1],[" with",0,1],[" a",1,1],[" poor",1,1],[" credit",0,1],[" history",0,1],[" after",1,1],[" a",1,1],[" divorce",1,1],[",",0,1],[" it",0,1],["'s",0,1],[" not",1,1],[" impossible",0,1],[".",0,1],[" Lenders",0,1],[" will",0,1],[" consider",0,1],[" various",0,1],[" factors",1,1],[",",0,1],[" including",0,1],[" your",0,1],[" credit",1,1],[" score",0,1],[",",0,1],[" income",0,1],[",",0,1],[" debt",0,1],[" levels",1,1],[",",0,1],[" and",1,1],[" financial",0,1],[" stability",0,1],[",",1,1],[" when",0,1],[" making",1,1],[" a",1,1],[" decision",1,1],[".",1,1],[" Here",1,1],[" are",0,1],[" some",0,1],[" steps",1,1],[" to",0,1],[" improve",0,1],[" your",0,1],[" chances",0,1],[":",0,1],["\n",0,1],["\n",0,1],["1",0,1],[".",0,1],[" **",0,1],["Fix",0,1],[" your",0,1],[" credit",1,1],[" score",0,0],["**:",0,1],[" Pay",1,1],[" off",0,1],[" high",0,1],["-interest",0,1],[" debt",1,1],[",",1,1],[" lower",0,1],[" your",0,1],[" credit",0,1],[" utilization",1,1],[",",0,1],[" and",0,1],[" avoid",0,1],[" opening",0,1],[" new",1,1],[" credit",0,1],[" accounts",1,1],[".",0,1],["\n",0,1],["2",0,1],[".",1,1],[" **",0,1],["Demonstr",0,1],["ate",1,1],[" financial",1,1],[" stability",0,1],["**:",0,1],[" Show",0,1],[" that",1,1],[" you",1,1],[" have",0,1],[" a",0,1],[" stable",1,1],[" income",0,1],[",",0,1],[" sufficient",0,1],[" savings",0,1],[",",0,1],[" and",1,1],[" a",0,1],[" solid",0,1],[" financial",0,1],[" plan",1,1],[".",1,1],["\n",0,1],["3",0,1],[".",0,1],[" **",0,1],["Get",0,1],[" a",1,1],[" co",0,1],["igner",0,1],["**:",0,1],[" Lenders",0,1],[" may",1,1],[" require",0,1],[" a",1,1],[" co",1,1],["igner",0,0],[",",0,1],[" which",0,1],[" can",0,1],[" help",0,1],[" reduce",0,1],[" the",0,1],[" risk",0,1],[" and",1,1],[" increase",0,1],[" your",0,1],[" chances",0,1],[" of",0,1],[" getting",0,1],[" approved",0,1],[".",0,1],["\n",0,1],["4",0,1],[".",1,1],[" **",1,1],["Check",0,1],[" with",0,1],[" multiple",1,1],[" lenders",1,1],["**:",1,1],[" Don",0,1],["'t",0,1],[" rely",0,1],[" on",0,1],[" just",1,1],[" one",1,1],[" lender",1,1],[";",0,1],[" they",0,1],[" may",1,1],[" have",0,1],[" different",0,1],[" requirements",0,1],[" and",0,1],[" interest",0,1],[" rates",0,1],[".",1,1],["\n",0,1],["5",0,1],[".",0,1],[" **",0,1],["Consider",0,1],[" a",0,1],[" FHA",0,1],[" loan",0,1],["**:",0,1],[" The",0,1],[" Federal",0,1],[" Housing",0,1],[" Administration",0,1],[" (",0,1],["F",0,1],["HA",1,1],[")",0,1],[" offers",0,1],[" loans",1,1],[" with",0,1],[" lower",0,1],[" credit",0,1],[" score",0,1],[" requirements",0,1],[" than",0,1],[" conventional",1,1],[" loans",1,1],[".",0,1],["\n",1,1],["6",0,1],[".",1,1],[" **",0,1],["Consult",0,1],[" a",0,1],[" financial",0,1],[" advisor",0,1],["**:",0,1],[" A",0,1],[" financial",0,1],[" advisor",0,1],[" can",0,1],[" help",1,1],[" you",0,1],[" understand",1,1],[" your",0,1],[" options",0,1],[" and",0,1],[" develop",0,1],[" a",0,1],[" plan",0,1],[" to",0,1],[" improve",0,1],[" your",0,0],[" credit",1,1],[" score",0,0],[".",1,1],["\n",1,1],["\n",1,1],["By",0,1],[" taking",0,1],[" these",0,1],[" steps",0,1],[" and",0,1],[" demonstrating",0,1],[" financial",0,1],[" stability",0,1],[",",1,0],[" you",1,1],[" can",0,1],[" increase",0,1],[" your",0,1],[" chances",0,0],[" of",0,0],[" getting",0,0],[" a",0,1],[" home",1,1],[" loan",0,0],[" with",0,0],[" a",1,0],[" poor",1,0],[" credit",0,0],[" history",0,0],[" after",1,0],[" a",1,0],[" divorce",1,0],[".",0,1]]}}}]}</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById("demo-data").textContent);
+  const $ = (id) => document.getElementById(id);
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const st = { ex: 0, arm: "ours_d4", view: "dec", timer: null };
+  const SHORT = ["Collapse of the Soviet Union", "Pitch and timbre", "Home loan after a divorce"];
+  const TASK = (t) => t.replace(/\s*\(.*\)$/, "");
+
+  DATA.examples.forEach((e, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = SHORT[i] || ("Example " + (i + 1)); b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+    b.onclick = () => { st.ex = i; [...$("tabs").children].forEach((c, j) => c.setAttribute("aria-pressed", j === i ? "true" : "false")); run(); };
+    $("tabs").appendChild(b);
+  });
+  const press = (on, off) => { $(on).setAttribute("aria-pressed", "true"); $(off).setAttribute("aria-pressed", "false"); };
+  $("arm-ours").onclick = () => { st.arm = "ours_d4"; press("arm-ours", "arm-none"); run(); };
+  $("arm-none").onclick = () => { st.arm = "none"; press("arm-none", "arm-ours"); run(); };
+  $("view-dec").onclick = () => { st.view = "dec"; press("view-dec", "view-det"); run(); };
+  $("view-det").onclick = () => { st.view = "det"; press("view-det", "view-dec"); run(); };
+  $("replay").onclick = () => run();
+  const stop = () => { if (st.timer) { clearInterval(st.timer); st.timer = null; } };
+  const fmt = (z) => (z < 0 ? "−" : "") + Math.abs(z).toFixed(2);
+  const prog = (f) => { $("prog").style.width = (100 * f).toFixed(1) + "%"; };
+
+  function foot(done, a, k, n) {
+    if (st.view === "dec") {
+      $("legend").innerHTML = '<span class="key"><i style="background:var(--mask)"></i>masked</span><span class="key"><i style="background:var(--fresh)"></i>just committed</span>';
+      $("meter").innerHTML = 'step <span class="stat">' + done + " / " + a.commits.length + "</span>";
+      prog(done / a.commits.length);
+      return;
+    }
+    $("legend").innerHTML = '<span class="key"><i style="background:var(--green-bg)"></i>green unit</span><span class="key"><i style="background:var(--red-bg)"></i>red unit</span><span class="key" style="text-decoration:line-through;color:#9aa0aa">repeated unit, not counted</span>';
+    const fin = done >= a.tokens.length, det = a.z > DATA.threshold;
+    $("meter").innerHTML = 'green units <span class="stat">' + k + " / " + n + "</span>" + (fin
+      ? ' &nbsp; z = <span class="stat">' + fmt(a.z) + '</span> &nbsp; <span class="verdict ' + (det ? "yes" : "no") + '">' + (det ? "detected at 1% FPR" : "not detected at 1% FPR") + "</span>"
+      : "");
+    prog(done / a.tokens.length);
+  }
+
+  function header(ex) { $("task").textContent = TASK(ex.task); $("qtext").textContent = ex.question.replace(/^\(ELI5\)\s*/, ""); }
+
+  function run() {
+    stop();
+    const ex = DATA.examples[st.ex], a = ex.arms[st.arm], C = $("canvas");
+    header(ex); C.innerHTML = ""; C.scrollTop = 0;
+    if (st.view === "dec") {
+      const slots = [];
+      for (let i = 0; i < a.n_gen; i++) { const s = document.createElement("span"); s.className = "m"; C.appendChild(s); slots.push(s); }
+      let i = 0;
+      const put = (p, t, fresh) => { const s = slots[p]; if (!s) return; s.className = "t" + (fresh ? " fresh" : ""); s.textContent = t; if (fresh) requestAnimationFrame(() => requestAnimationFrame(() => s.classList.remove("fresh"))); };
+      if (reduce) { a.commits.forEach(([p, t]) => put(p, t, false)); foot(a.commits.length, a); return; }
+      foot(0, a);
+      st.timer = setInterval(() => { if (i < a.commits.length) { put(a.commits[i][0], a.commits[i][1], true); i++; foot(i, a); } else stop(); }, 55);
+    } else {
+      const sp = a.tokens.map(([t]) => { const s = document.createElement("span"); s.className = "u pending"; s.textContent = t; C.appendChild(s); return s; });
+      let i = 0, k = 0, n = 0;
+      const show = (j) => { const [, g, c] = a.tokens[j]; if (g === null) { sp[j].className = "u"; return; } if (!c) { sp[j].className = "u rep"; return; } n++; if (g) k++; sp[j].className = "u " + (g ? "g" : "r"); };
+      if (reduce) { for (; i < sp.length; i++) show(i); foot(i, a, k, n); return; }
+      foot(0, a, 0, 0);
+      st.timer = setInterval(() => { for (let b = 0; b < 3 && i < sp.length; b++, i++) show(i); foot(i, a, k, n); if (i >= sp.length) stop(); }, 30);
+    }
+  }
+
+  // commit order of the first twelve tokens (example 1, ours)
+  const cm = DATA.examples[0].arms.ours_d4.commits, stepOf = {}, piece = {};
+  cm.forEach(([p, t], s) => { if (!(p in stepOf)) stepOf[p] = s + 1; piece[p] = t; });
+  for (let p = 0; p < 12; p++) {
+    const txt = (piece[p] || "").trim() || "·";
+    const a = document.createElement("span"); a.className = "tok"; a.textContent = txt; const sa = document.createElement("sub"); sa.textContent = p + 1; a.appendChild(sa); $("ar").appendChild(a);
+    const early = Object.keys(stepOf).some((q) => +q < p && stepOf[+q] > stepOf[p]);
+    const d = document.createElement("span"); d.className = "tok" + (early ? " early" : ""); d.textContent = txt; const sd = document.createElement("sub"); sd.textContent = stepOf[p]; d.appendChild(sd); $("dlm").appendChild(d);
+  }
+
+  // first frame: the finished response, then animate once the panel is visible
+  (() => { const ex = DATA.examples[0], a = ex.arms.ours_d4; header(ex); $("canvas").textContent = a.tokens.map((t) => t[0]).join(""); foot(a.commits.length, a); })();
+  if ("IntersectionObserver" in window) new IntersectionObserver((es, o) => { if (es.some((e) => e.isIntersecting)) { o.disconnect(); run(); } }, { threshold: .35 }).observe($("canvas"));
+
+  // decision states (Table of examples in the paper's appendix)
+  const DS = [
+    { name: "private equity", ctx: "… typically made in private", rows: [
+      { at: null, a: [["before", .42], ["that", .22]], b: [["have", .23], ["they", .21]] },
+      { at: ["companies", .79], a: [["that", .73], ["before", .24]], b: [["have", .61], ["they", .32]] },
+      { at: ["equity", .20], a: [["funds", .90], ["or", .09]], b: [[",", .85], ["venture", .11]] } ] },
+    { name: "investment from", ctx: "… have received investment from", rows: [
+      { at: null, a: [["wide", .27], ["with", .27]], b: [["of", .50], ["range", .30]] },
+      { at: ["individuals", .59], a: [["and", .43], ["with", .43]], b: [["small", .96], ["institutions", .02]] },
+      { at: ["a", .36], a: [["diverse", .79], ["range", .12]], b: [["of", .53], ["range", .47]] } ] },
+    { name: "The sequence", ctx: "… preceding ones . The", rows: [
+      { at: null, a: [["sequence", .50], ["common", .16]], b: [["Fibonacci", .36], ["numbers", .15]] },
+      { at: ["sequence", .65], a: [["starts", .82], ["typically", .13]], b: [["with", .81], ["starts", .06]] },
+      { at: ["most", .16], a: [["commonly", .73], ["common", .27]], b: [["used", .79], ["Fibonacci", .20]] } ] },
+    { name: "a donor", ctx: "… from a donor .", rows: [
+      { at: null, a: [["diseased", .91], ["is", .05]], b: [["is", .35], ["kidney", .27]] },
+      { at: ["This", .59], a: [["is", .86], ["procedure", .06]], b: [["is", .74], ["because", .21]] },
+      { at: ["The", .40], a: [["diseased", .87], ["reason", .07]], b: [["kidney", .56], ["for", .27]] } ] },
+  ];
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const bars = (list) => list.map(([w, p], i) => '<div class="pb' + (i === 0 ? " top" : "") + '"><span>' + esc(w) + '</span><span class="bar"><i style="width:' + (100 * p).toFixed(0) + '%"></i></span><span class="v">.' + String(Math.round(p * 100)).padStart(2, "0") + "</span></div>").join("");
+  function drawDS(i) {
+    const d = DS[i];
+    $("ds-ctx").innerHTML = esc(d.ctx) + ' <span class="slot">j</span><span class="mk">j+1</span><span class="mk">j+2</span>';
+    let h = '<div class="h">At position j</div><div class="h">Belief about j+1</div><div class="h">Belief about j+2</div>';
+    d.rows.forEach((r) => {
+      const cls = r.at ? "" : " pre";
+      const who = r.at ? 'Place <span class="tk">' + esc(r.at[0]) + "</span><small>p = ." + String(Math.round(r.at[1] * 100)).padStart(2, "0") + "</small>" : "Before placing";
+      h += '<div class="who' + cls + '">' + who + '</div><div class="' + cls.trim() + '">' + bars(r.a) + '</div><div class="' + cls.trim() + '">' + bars(r.b) + "</div>";
+    });
+    $("ds-grid").innerHTML = h;
+  }
+  DS.forEach((d, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = d.name; b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+    b.onclick = () => { [...$("ds-tabs").children].forEach((c, j) => c.setAttribute("aria-pressed", j === i ? "true" : "false")); drawDS(i); };
+    $("ds-tabs").appendChild(b);
+  });
+  drawDS(0);
+
+  // equations
+  const tex = () => { if (!window.katex) return; document.querySelectorAll(".eq[data-tex]").forEach((el) => { try { katex.render(el.dataset.tex, el, { displayMode: true, throwOnError: false }); } catch (e) {} }); };
+  if (document.readyState === "complete") tex(); else window.addEventListener("load", tex);
+
+  // BibTeX copy
+  $("copy").onclick = () => {
+    const t = $("bibtex").textContent, done = () => { $("copy").textContent = "Copied"; setTimeout(() => ($("copy").textContent = "Copy"), 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, () => sel()); else sel();
+    function sel() { const r = document.createRange(); r.selectNodeContents($("bibtex")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  };
+})();
+</script>
+</body>
+</html>

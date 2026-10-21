@@ -1,0 +1,12 @@
+[
+ {
+  "name": "exact_d2",
+  "delta": 1.0,
+  "lam": 0.5,
+  "foresight": "exact",
+  "unit_aware": true,
+  "order": "consistent",
+  "gate": 0.02,
+  "order_iters": 4
+ }
+]
