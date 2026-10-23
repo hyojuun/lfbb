@@ -90,7 +90,7 @@ header.top { padding-top: 4.4rem; }
 /* captions, notes */
 figure { margin: 1.9rem 0 2.1rem; }
 figure img { display: block; width: 100%; height: auto; margin: 0 auto; }
-.wrap > figure { max-width: 1000px; margin-left: auto; margin-right: auto; }
+.wrap > figure { max-width: 760px; margin-left: auto; margin-right: auto; }
 figcaption, .cap { font: 14px/1.55 var(--sans); color: var(--ink2); margin-top: 10px; }
 figcaption b, .cap b { color: var(--ink); font-weight: 600; }
 .sn { display: block; font: 13.8px/1.55 var(--sans); color: var(--ink3); margin: -.2em 0 1.25em; padding: 1px 0 1px 14px; border-left: 2px solid var(--rule); }
@@ -155,7 +155,7 @@ tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
 tr.ours td { background: var(--blue-bg); }
 td.b { font-weight: 600; }
 th.grp { text-align: center; color: var(--ink3); }
-.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 40px; align-items: start; max-width: 1000px; margin: 1.2rem auto 1.4rem; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; align-items: start; max-width: 760px; margin: 1.2rem auto 1.4rem; }
 .pair .tw { margin-top: .4rem; }
 
 /* citation */
@@ -261,7 +261,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     <p>A unit that already occurs in the committed text adds no evidence, so this <em>unit-aware</em> score sets its green probability to γ, and repetition earns nothing. The tilt of DLM-KGW omits this correction and keeps rewarding repeated green units. Under this objective, the evidence that a commit can gain at a given distortion depends on two components that existing green-red DLM watermarks keep fixed, the partition of the vocabulary and the beliefs from which foresight is computed.</p>
   </div>
   <figure>
-    <img src="static/images/fig_overview.png" alt="Overview: the DLM canvas at position j, the learned bands, the foresight predictor, the tilt toward charge, and the detector that needs only the key and the bands" width="2064" height="827">
+    <img src="static/images/fig_overview.png" alt="Overview: the DLM canvas at position j, the learned bands, the foresight predictor, the tilt toward charge, and the detector that needs only the key and the bands" width="2064" height="827" style="max-width:740px">
     <figcaption class="col"><b>Our watermark at one masked position (illustrative tokens and probabilities).</b> The model prefers <i>have</i>, but the tilt moves its distribution toward <i>charge</i>, which is probably red itself but makes its predicted neighbors <i>low fees</i> green. Each module is learned offline from its own data (top), the tilt combines the own and foresight terms during generation (middle), and the detector needs only the key and the bands (bottom).</figcaption>
   </figure>
 </section>
@@ -270,7 +270,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   <div class="col">
     <h2>Learned bands spread competing candidates</h2>
     <figure style="margin-top:0">
-      <img src="static/images/teaser_bands.png" alt="Four candidates, charge, have, offer and pay, assigned to four bands. A keyed hash puts charge and have into the same band and leaves the green band empty, while learned bands put each candidate into its own band" width="1360" height="524">
+      <img src="static/images/teaser_bands.png" alt="Four candidates, charge, have, offer and pay, assigned to four bands. A keyed hash puts charge and have into the same band and leaves the green band empty, while learned bands put each candidate into its own band" width="1100" height="413" style="max-width:355px">
     </figure>
     <aside class="sn"><b>Why the key still picks the band.</b> A green list learned without the key would be the same for every key, so unwatermarked text could match it and the null distribution would no longer be known.</aside>
     <p>Learned bands decouple the partition, which we learn, from the key, which only selects the green band. A partition assigns every token to one of four bands, and a keyed hash of the context selects one band as the green list (γ = 0.25, as in DLM-KGW). Because the key still picks the green band, the number of green units in any text that does not depend on the key has a known distribution for every partition, and the detector's <i>p</i>-value stays exact.</p>
@@ -287,7 +287,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   <div class="col">
     <h2>The predictor sees the neighbors after placement</h2>
     <figure style="margin-top:0">
-      <img src="static/images/teaser_foresight.png" alt="Context Index funds, a masked position j and two masked neighbors. Prior work uses the same current beliefs for every candidate. With predicted post-placement beliefs, placing charge makes both neighbors green, low and fees, while have leads to lower costs, both red" width="1360" height="543">
+      <img src="static/images/teaser_foresight.png" alt="Context Index funds, a masked position j and two masked neighbors. Prior work uses the same current beliefs for every candidate. With predicted post-placement beliefs, placing charge makes both neighbors green, low and fees, while have leads to lower costs, both red" width="1100" height="438" style="max-width:355px">
     </figure>
     <p>Foresight needs the neighbors' beliefs once <i>v</i> is placed. Existing methods use the beliefs before placement, which are the same for every candidate, although placing a candidate changes the most likely token of a masked neighbor in 74% of uncertain commits, or <em>decision states</em>. Computing the post-placement beliefs exactly costs one generator pass per candidate.</p>
     <div class="ds" id="ds">
@@ -334,7 +334,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     <h3>At low strengths, ours detects more at the same log-perplexity</h3>
     <p>Low strengths cost the least quality but leave detection uncertain, so extra evidence matters most there. Averaged over five keys on 300 prompts, ours detects 12.7 and 4.5 points more responses than DLM-KGW at 1% FPR at δ = 2 and 3, and 11.9 and 10.3 points more at 0.1% FPR, all significantly, with no significant difference in log-perplexity.</p>
     <figure>
-      <img src="static/images/fig_frontier.png" alt="TPR at 1% FPR against log-perplexity for ours, DLM-KGW and dgMARK. Ours lies above DLM-KGW at delta 2 and 3" width="1400" height="910" style="max-width:560px">
+      <img src="static/images/fig_frontier.png" alt="TPR at 1% FPR against log-perplexity for ours, DLM-KGW and dgMARK. Ours lies above DLM-KGW at delta 2 and 3" width="1400" height="910" style="max-width:355px">
       <figcaption><b>Detection against log-perplexity.</b> Numbers in the markers are δ, and arrows mark our gain at the same δ.</figcaption>
     </figure>
 
@@ -346,14 +346,14 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     <p>Crossing the partition (keyed hash or learned bands) with the beliefs behind foresight (current or predicted) under the same objective isolates each component. Learned bands raise the mean <i>z</i>-score by 0.41–0.47 at every strength without raising log-perplexity, and the predictor raises it by 0.10–0.28 with either partition. Their gains are close to additive. Together, they detect 20.5 and 4.8 points more responses at 1% FPR at δ = 2 and 3, with no significant change in log-perplexity or judge score, and need 30% and 22% less KL for the same mean <i>z</i>-score.</p>
   </div>
   <figure>
-    <img src="static/images/fig_components.png" alt="Gains of learned bands only, the predictor only and both, at equal KL, equal mean z-score and equal TPR at 1% FPR" width="2064" height="624">
+    <img src="static/images/fig_components.png" alt="Gains of learned bands only, the predictor only and both, at equal KL, equal mean z-score and equal TPR at 1% FPR" width="2064" height="624" style="max-width:760px">
     <figcaption class="col"><b>Each component against the cell with neither</b> (keyed hash, current beliefs), in mean <i>z</i>-score at equal KL (a), KL saved at equal mean <i>z</i>-score (b) and log-perplexity at equal TPR@1% (c). Error bars are paired bootstrap 95% confidence intervals.</figcaption>
   </figure>
   <div class="col">
     <h3>Why post-placement beliefs matter</h3>
     <p>On 2,397 held-out decision states, foresight from the current beliefs is only weakly correlated with exact foresight (0.39) and explains none of its variance. The predictor recovers each neighbor's post-placement top-1 token in 61% of the cases, explains 49% of the variance, and ranks the exact best candidate first in 54% of the states, against 28% for the current beliefs. It costs 1.49 times the decoding time of current beliefs, against at least 2.15 times for exact foresight, which re-runs the generator for each candidate.</p>
     <figure>
-      <img src="static/images/fig_foresight.png" alt="Fidelity of current beliefs and the predictor to exact foresight, and the gain of the predictor in mean z-score at the same delta and at equal KL" width="1400" height="1210" style="max-width:500px">
+      <img src="static/images/fig_foresight.png" alt="Fidelity of current beliefs and the predictor to exact foresight, and the gain of the predictor in mean z-score at the same delta and at equal KL" width="1400" height="1210" style="max-width:370px">
       <figcaption><b>(a)</b> Fidelity to exact foresight on held-out decision states. <b>(b)</b> Gain of the predictor in mean <i>z</i>-score over current-belief foresight with learned bands, at the same δ and at equal KL, with 95% confidence intervals.</figcaption>
     </figure>
 
