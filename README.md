@@ -10,29 +10,42 @@ Yonsei University
 [![License: MIT](https://img.shields.io/badge/license-MIT-3c9a62.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-4a4a4a.svg)
 
-<img src="assets/demo.png" width="100%" alt="The same prompt decoded by LLaDA-8B-Instruct without a watermark and with ours. Without it, 23% of the units are green and z = -0.53. With it, 47% are green and z = 7.09.">
+<img src="assets/demo.gif" width="100%" alt="The same prompt decoded by LLaDA-8B-Instruct without a watermark and with ours, token by token in commit order. Without it, 23% of the units are green and z = -0.53. With it, 47% are green and z = 7.09.">
 
-<sub>The same prompt and random seed, decoded by LLaDA-8B-Instruct without a watermark and with ours (δ = 4). Each token forms a unit with
-its two preceding tokens, and the detector counts every distinct unit once. By chance about a quarter of the units are green, and the
-watermark raises that share to 47%, a z-score of 7.1. The interactive version on the <a href="https://hyojuun.github.io/lfbb/">project page</a>
-replays the decoding.</sub>
+<sub>The same prompt and random seed, decoded by LLaDA-8B-Instruct without a watermark and with ours (δ = 4). Tokens appear in the order
+in which the model commits them. Each token forms a unit with its two preceding tokens, so it stays grey until both are fixed, and the
+detector counts every distinct unit once. By chance about a quarter of the units are green, and the watermark raises that share to 47%, a
+z-score of 7.1. The <a href="https://hyojuun.github.io/lfbb/">project page</a> replays the decoding for three prompts.</sub>
 
 </div>
 
-**TL;DR** Diffusion language models write out of order, so a green-red watermark often has to pick a token before it knows which
-tokens are green. We learn the two parts that existing watermarks for these models keep fixed, which tokens compete for the same green
-list and how a token changes its neighbors, and detect up to 18 points more responses at the same strength while matching the quality of
-unwatermarked text.
+**TL;DR** Diffusion language models do not write left to right, so a green-red watermark often has to choose a token before it knows
+which tokens are green. We learn the two parts that existing watermarks for these models keep fixed, which tokens compete for the same
+green list and how a token changes its neighbors, and detect up to 18 points more responses at the same strength while matching the
+quality of unwatermarked text.
+
+## News
+
+- **2026-10-22** Code and [project page](https://hyojuun.github.io/lfbb/) released. The arXiv preprint follows soon.
 
 ## Why diffusion language models are hard to watermark
 
-A diffusion language model writes the way people solve a crossword. It fills the blanks it is surest of first and comes back to the
-rest. A green-red watermark, however, picks each token's green list from the tokens before it, and in LLaDA-8B-Instruct 39% of the
-tokens are written while part of that context is still blank. The watermark therefore has to choose a token before it knows which list is
-green, and the token it chooses then decides the green lists of the next two tokens.
+A green-red watermark picks each token's green list from the tokens before it. An autoregressive model writes left to right, so those
+tokens are always fixed when it picks a token. A diffusion language model does not write left to right. It starts from a fully masked
+response and commits tokens over many steps, in an order that its sampler chooses. LLaDA-8B-Instruct in its default low-confidence order
+commits 39% of its tokens while at least one of the two preceding positions is still masked, and Dream-v0-Instruct-7B in its random
+order 66%. The watermark therefore has to choose a token before it knows which list is green, and the token it chooses also decides the
+green lists of the next two tokens.
 
-Prior work, DLM-KGW, handles both cases with the model's predictions for the blanks. It tilts each choice toward tokens that are
-likely to be green or that make their neighbors green. How much one choice can gain, though, depends on two things that it keeps fixed.
+<p align="center">
+  <img src="assets/order.png" width="92%" alt="The first twelve tokens of the watermarked response, numbered left to right and by the step at which LLaDA-8B-Instruct commits them. The exclamation mark, Soviet, a, big, and, strong and family are committed before a token to their left.">
+  <br><sub>The first twelve tokens of the watermarked response above, numbered by the step at which they are committed. Highlighted tokens
+  are committed before a token to their left.</sub>
+</p>
+
+Prior work, DLM-KGW, handles both cases with the model's predictions for the masked positions. It tilts each choice toward tokens that
+are likely to be green or that make their neighbors green. How much one choice can gain, though, depends on two things that it keeps
+fixed.
 
 <p align="center">
   <img src="assets/motivation.png" width="100%" alt="(a) A keyed hash puts charge and have into the same band and leaves the green band empty, while learned bands give each candidate its own band. (b) Before placement the neighbors' predictions are the same for every candidate, but placing charge makes both neighbors green.">
@@ -68,6 +81,12 @@ Detection needs only the text, the key and the band table. It never runs the lan
 WaterBench-600 with LLaDA-8B-Instruct (low-confidence order, 256 tokens, temperature 0.5). TPR uses thresholds calibrated on 600
 unwatermarked responses detected under 100 keys, log-perplexity is measured with Qwen3-8B, and the judge, Gemma-4-12B-it, rates style
 and consistency from 1 to 10. Loops is the share of responses with a repetition loop. Baselines run from their official code.
+
+<p align="center">
+  <img src="assets/frontier.png" width="56%" alt="TPR at 1% FPR against log-perplexity for ours, DLM-KGW and dgMARK, with the strength in the markers. Ours lies above DLM-KGW at delta 2 and 3.">
+  <br><sub>TPR@1% against log-perplexity, with the strength δ in the markers. Ours lies above DLM-KGW at δ = 2 and 3, where detection
+  is hardest.</sub>
+</p>
 
 | Method | δ | TPR@1% ↑ | TPR@0.1% ↑ | log-PPL ↓ | Judge ↑ | Loops (%) ↓ |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -141,13 +160,23 @@ python scripts/generate.py --arms configs/arms/ours_d3_d4.json \
     --prompts data/dev150_prompts_llada.jsonl --out runs/quickstart
 ```
 
-Each output row holds the response, its detection (`n`, `k`, `z`, `p`) and the KL divergence of the tilt. An arm config sets the
-strength `delta` as the logit bias added before the temperature (the paper reports δ = 2·`delta`), the foresight weight `lam`, the
-source of foresight (`predictor` or `current`), the commit order and the predictor gate. The configs `configs/arms/ours_*.json` use
-the settings of the paper: a foresight weight λ = 1/2, so that the two dependents together weigh as much as the position itself,
-four bands, two-token contexts, the consistent commit order, a predictor gate of 0.02, the unit-aware score and special tokens
-treated as red. `--commits-per-step K` unmasks K tokens per forward pass, and `--refresh 2` lets the predictor update the beliefs
-around each commit within a step.
+Each output row holds the response, its detection (`n`, `k`, `z`, `p`) and the KL divergence of the tilt. `--partition` takes a learned
+band table (four bands in the paper) or `hash`, and an arm config in `configs/arms/` sets the rest. The configs `ours_*.json` use the
+settings of the paper.
+
+| Option | Meaning | Paper |
+|---|---|---|
+| `delta` | strength of the tilt, a logit bias added before the temperature (the paper reports δ = 2·`delta`) | 1 to 2.5 |
+| `lam` | foresight weight λ (1/2 lets the two dependents together weigh as much as the position itself) | 0.5 |
+| `foresight` | source of the neighbors' beliefs: `predictor`, `current` (before placement) or `exact` (re-runs the generator) | `predictor` |
+| `gate` | predicted or exact foresight only where the second tilted candidate has at least this probability | 0.02 |
+| `unit_aware` | count each distinct (context, token) unit once, as the detector does | `true` |
+| `order` | commit order: `consistent` (the tilted confidences choose the position), `current_tilt` or `random` | `consistent` |
+| `context_width` | tokens in the context of a unit | 2 |
+| `special` | special tokens scored as `red` or kept `neutral` | `red` |
+
+`--commits-per-step K` unmasks K tokens per forward pass, and `--refresh 2` lets the predictor update the beliefs around each commit
+within a step.
 
 ## Reproducing the paper
 
@@ -265,6 +294,10 @@ Each script documents its options and gives an example in its header (`python sc
 | `configs/arms/` | watermark configurations, including the development candidates |
 | `configs/reproduce/` | the commands of each result, run by `scripts/reproduce.py` |
 | `data/` | the training and development prompts, prompt id lists, special tokens |
+
+## Questions
+
+Questions and bug reports are welcome on the [issue tracker](https://github.com/hyojuun/lfbb/issues).
 
 ## Citation
 

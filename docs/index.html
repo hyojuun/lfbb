@@ -9,8 +9,15 @@
 <meta property="og:title" content="Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands">
 <meta property="og:description" content="A green-red watermark for diffusion language models that learns its vocabulary partition and the neighbors' beliefs after a candidate is placed, and counts evidence the way the detector does.">
 <meta property="og:url" content="https://hyojuun.github.io/lfbb/">
-<meta property="og:image" content="https://hyojuun.github.io/lfbb/static/images/fig_teaser.png">
+<meta property="og:image" content="https://hyojuun.github.io/lfbb/static/images/social.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The paper title and authors beside a response decoded by LLaDA-8B-Instruct with our watermark, in which 47% of the units are green and z = 7.09.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands">
+<meta name="twitter:description" content="A green-red watermark for diffusion language models that learns its vocabulary partition and the neighbors' beliefs after a candidate is placed, and counts evidence the way the detector does.">
+<meta name="twitter:image" content="https://hyojuun.github.io/lfbb/static/images/social.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='5' width='6' height='22' rx='1.5' fill='%232f8f5b'/%3E%3Crect x='10' y='5' width='6' height='22' rx='1.5' fill='%23e3a59c'/%3E%3Crect x='18' y='5' width='6' height='22' rx='1.5' fill='%23e3a59c'/%3E%3Crect x='26' y='5' width='4' height='22' rx='1.5' fill='%23e3a59c'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
@@ -44,11 +51,17 @@ section { padding: 3.2rem 0 1.2rem; border-top: 1px solid var(--rule); }
 header.top { padding-top: 4.4rem; }
 .top .col { max-width: 760px; }
 .dek { font-size: 1.3rem; line-height: 1.5; color: var(--ink2); margin: 0; }
-.byline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 28px; max-width: 760px; margin: 2.2rem auto 0; padding: 14px 0 15px; border-top: 1px solid var(--rule2); border-bottom: 1px solid var(--rule); font: 15px/1.55 var(--sans); }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 1.5rem 0 0; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px 8px 12px; border: 1px solid var(--rule2); border-radius: 999px; font: 500 14px/1 var(--sans); color: var(--ink); background: var(--paper); text-decoration: none; }
+a.btn:hover { background: var(--tint); border-color: var(--ink3); }
+.btn svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
+a.btn.primary:hover { background: #343944; border-color: #343944; }
+.btn.off { color: var(--ink3); background: var(--tint); border-style: dashed; }
+.btn small { font: 500 10.5px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; margin-left: 1px; }
+.byline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 28px; max-width: 760px; margin: 2.2rem auto 0; padding: 14px 0 15px; border-top: 1px solid var(--rule2); border-bottom: 1px solid var(--rule); font: 15px/1.55 var(--sans); }
 .byline dt { font: 500 11.5px/1.4 var(--sans); text-transform: uppercase; letter-spacing: .09em; color: var(--ink3); margin: 0 0 5px; }
 .byline dd { margin: 0; }
-.byline .off { color: var(--ink3); }
-.byline .off small { font-size: 11.5px; letter-spacing: .02em; }
 
 /* demo */
 .demo { max-width: 1000px; margin: 2.4rem auto 0; border: 1px solid var(--rule2); border-radius: 3px; background: var(--paper); }
@@ -197,12 +210,16 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   <div class="col">
     <h1>Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands</h1>
     <p class="dek">Diffusion language models often commit a token before the tokens that select its green list, and the token later shapes its neighbors' green lists. We learn the two components that green-red watermarks for these models keep fixed, and count evidence the way the detector does.</p>
+    <nav class="links" aria-label="Paper links">
+      <a class="btn primary" href="https://github.com/hyojuun/lfbb"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 4 1.5 8l4 4M10.5 4l4 4-4 4"/></svg>Code</a>
+      <span class="btn off" aria-disabled="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13"/></svg>arXiv <small>soon</small></span>
+      <a class="btn" href="#cite"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></svg>BibTeX</a>
+    </nav>
   </div>
   <dl class="byline">
     <div><dt>Authors</dt><dd>Hyojun Kim<br>Hyeseon An<br>Yo-Sub Han</dd></div>
     <div><dt>Affiliation</dt><dd>Yonsei University</dd></div>
     <div><dt>Status</dt><dd>Preprint, 2026</dd></div>
-    <div><dt>Links</dt><dd><span class="off" data-link="pdf">Paper <small>(soon)</small></span><br><span class="off" data-link="arxiv">arXiv <small>(soon)</small></span><br><a href="https://github.com/hyojuun/lfbb">Code</a> · <a href="#cite">BibTeX</a></dd></div>
   </dl>
 
   <div class="demo" id="example">
