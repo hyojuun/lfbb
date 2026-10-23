@@ -101,12 +101,13 @@ and consistency from 1 to 10. Loops is the share of responses with a repetition 
 
 ## Getting started
 
-Two Python environments keep the generators' pinned Transformers version apart from the evaluation libraries. Python 3.10 or later and
-a CUDA GPU are required.
+Decoding, training, detection and prompt preparation run with Transformers 4.49, which the generators pin. The scoring scripts
+(`score_ppl.py`, `judge.py` and `attack_paraphrase.py`) use vLLM, so they run in a second environment. Python 3.10 or later and a CUDA
+GPU are required.
 
 ```bash
-pip install -r requirements.txt          # decoding, training, detection, prompt preparation (Transformers 4.49)
-pip install -r requirements-eval.txt     # separate environment for score_ppl.py, judge.py and attack_paraphrase.py (vLLM)
+pip install -r requirements.txt        # decoding, training, detection
+pip install -r requirements-eval.txt   # scoring, in its own environment
 ```
 
 The band table and the predictor are kept secret together with the key, so the ones behind the paper are not distributed. The commands
@@ -119,9 +120,15 @@ repository root.
 from transformers import AutoTokenizer
 from lfbb import detect, load_partition, load_special_ids
 
-tok = AutoTokenizer.from_pretrained("GSAI-ML/LLaDA-8B-Instruct", trust_remote_code=True)
-part = load_partition("checkpoints/bands.pt", key=42, special_ids=load_special_ids("data/special_ids_llada.json"), device="cpu")
-n, k, z, p = detect(part, tok(text, add_special_tokens=False)["input_ids"])   # units, green units, z-score, exact p-value
+tok = AutoTokenizer.from_pretrained("GSAI-ML/LLaDA-8B-Instruct",
+                                    trust_remote_code=True)
+special = load_special_ids("data/special_ids_llada.json")
+part = load_partition("checkpoints/bands.pt", key=42,
+                      special_ids=special, device="cpu")
+
+text = "..."  # the response to check
+ids = tok(text, add_special_tokens=False)["input_ids"]
+n, k, z, p = detect(part, ids)  # units, green units, z-score, exact p-value
 ```
 
 `load_partition("hash", ...)` gives the keyed-hash bands of standard green-red watermarks, which need no training.
@@ -129,8 +136,9 @@ n, k, z, p = detect(part, tok(text, add_special_tokens=False)["input_ids"])   # 
 **Generate.** Watermarked decoding of a prompt file with LLaDA-8B-Instruct:
 
 ```bash
-python scripts/generate.py --arms configs/arms/ours_d3_d4.json --partition checkpoints/bands.pt \
-    --predictor checkpoints/predictor.pt --prompts data/dev150_prompts_llada.jsonl --out runs/quickstart
+python scripts/generate.py --arms configs/arms/ours_d3_d4.json \
+    --partition checkpoints/bands.pt --predictor checkpoints/predictor.pt \
+    --prompts data/dev150_prompts_llada.jsonl --out runs/quickstart
 ```
 
 Each output row holds the response, its detection (`n`, `k`, `z`, `p`) and the KL divergence of the tilt. An arm config sets the
@@ -146,9 +154,11 @@ around each commit within a step.
 The baselines, DLM-KGW and dgMARK, run from their official code at these commits:
 
 ```bash
-git clone https://github.com/eth-sri/diffusion-lm-watermark external/diffusion-lm-watermark
+git clone https://github.com/eth-sri/diffusion-lm-watermark \
+    external/diffusion-lm-watermark
 git -C external/diffusion-lm-watermark checkout 380a4bef
-git clone https://github.com/pyomin/dgmark-watermarking external/dgmark-watermarking
+git clone https://github.com/pyomin/dgmark-watermarking \
+    external/dgmark-watermarking
 git -C external/dgmark-watermarking checkout cb6d79ff
 ```
 
@@ -175,7 +185,8 @@ only when the bootstrap interval of that gain lies above zero and the judge scor
 loops do not get worse.
 
 ```bash
-python scripts/reproduce.py configs/reproduce/dev_selection.json   # decode the candidates on the development prompts and compare
+# decode the candidate settings on the development prompts and compare them
+python scripts/reproduce.py configs/reproduce/dev_selection.json
 ```
 
 </details>
@@ -205,12 +216,18 @@ The WaterBench prompts are built from the official DLM-KGW repository, and the c
 and must not be redistributed, so `data/codeqa/` stays local).
 
 ```bash
-python scripts/prepare_waterbench.py --source external/diffusion-lm-watermark/data/WaterBench --out data/waterbench600_llada.jsonl
-python scripts/render_prompts.py --texts data/other_tasks_prompts.jsonl --out data/other_tasks_llada.jsonl
-python scripts/prepare_codeqa.py --humaneval raw/human-eval-v2-20210705.jsonl --mbpp raw/mbpp.jsonl --gpqa raw/gpqa_diamond.csv \
-    --out-dir data/codeqa
-python scripts/reproduce.py configs/reproduce/table1.json   # comparison with DLM-KGW and dgMARK on WaterBench-600
-python scripts/reproduce.py configs/reproduce/table2.json   # the bands crossed with the source of foresight
+python scripts/prepare_waterbench.py \
+    --source external/diffusion-lm-watermark/data/WaterBench \
+    --out data/waterbench600_llada.jsonl
+python scripts/render_prompts.py --texts data/other_tasks_prompts.jsonl \
+    --out data/other_tasks_llada.jsonl
+python scripts/prepare_codeqa.py --humaneval raw/human-eval-v2-20210705.jsonl \
+    --mbpp raw/mbpp.jsonl --gpqa raw/gpqa_diamond.csv --out-dir data/codeqa
+
+# comparison with DLM-KGW and dgMARK on WaterBench-600
+python scripts/reproduce.py configs/reproduce/table1.json
+# the bands crossed with the source of foresight
+python scripts/reproduce.py configs/reproduce/table2.json
 ```
 
 Thresholds are calibrated on unwatermarked responses, pooled over 100 keys for the keyed detectors. `scripts/report.py` gives the mean
@@ -240,23 +257,24 @@ Each script documents its options and gives an example in its header (`python sc
 
 ## Repository structure
 
-```
-lfbb/                    the method: bands and keyed green band, detector, LLaDA and Dream samplers, foresight predictors
-scripts/                 prompt preparation, learning the components, setting selection, generation, calibration, evaluation, attacks
-scripts/baselines/       drivers for the official code of DLM-KGW and dgMARK
-configs/arms/            watermark configurations, including the development candidates
-configs/reproduce/       the commands of each result, run by scripts/reproduce.py
-data/                    the training and development prompts, prompt id lists, special tokens
-```
+| Path | Contents |
+|---|---|
+| `lfbb/` | the method: bands and keyed green band, detector, LLaDA and Dream samplers, foresight predictors |
+| `scripts/` | prompt preparation, learning the components, setting selection, generation, calibration, evaluation, attacks |
+| `scripts/baselines/` | drivers for the official code of DLM-KGW and dgMARK |
+| `configs/arms/` | watermark configurations, including the development candidates |
+| `configs/reproduce/` | the commands of each result, run by `scripts/reproduce.py` |
+| `data/` | the training and development prompts, prompt id lists, special tokens |
 
 ## Citation
 
 ```bibtex
 @misc{kim2026watermarking,
-  title         = {Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands},
-  author        = {Hyojun Kim and Hyeseon An and Yo-Sub Han},
-  year          = {2026},
-  note          = {Preprint}
+  title  = {Watermarking Diffusion Language Models with
+            Learned Foresight and Balanced Bands},
+  author = {Hyojun Kim and Hyeseon An and Yo-Sub Han},
+  year   = {2026},
+  note   = {Preprint}
 }
 ```
 
