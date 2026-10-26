@@ -5,7 +5,7 @@
 **Hyojun Kim · Hyeseon An · Yo-Sub Han**<br>
 Yonsei University
 
-[![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b.svg)](#citation)
+[![arXiv](https://img.shields.io/badge/arXiv-2610.32205-b31b1b.svg)](https://arxiv.org/abs/2610.32205)
 [![Project page](https://img.shields.io/badge/project-page-2b6fd6.svg)](https://hyojuun.github.io/lfbb/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3c9a62.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-4a4a4a.svg)
@@ -26,7 +26,8 @@ quality of unwatermarked text.
 
 ## News
 
-- **2026-10-22** Code and [project page](https://hyojuun.github.io/lfbb/) released. The arXiv preprint follows soon.
+- **2026-10-23** The paper is on [arXiv](https://arxiv.org/abs/2610.32205).
+- **2026-10-22** Code and [project page](https://hyojuun.github.io/lfbb/) released.
 
 ## Why diffusion language models are hard to watermark
 
@@ -303,11 +304,14 @@ Questions and bug reports are welcome on the [issue tracker](https://github.com/
 
 ```bibtex
 @misc{kim2026watermarking,
-  title  = {Watermarking Diffusion Language Models with
-            Learned Foresight and Balanced Bands},
-  author = {Hyojun Kim and Hyeseon An and Yo-Sub Han},
-  year   = {2026},
-  note   = {Preprint}
+  title         = {Watermarking Diffusion Language Models with
+                   Learned Foresight and Balanced Bands},
+  author        = {Hyojun Kim and Hyeseon An and Yo-Sub Han},
+  year          = {2026},
+  eprint        = {2610.32205},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  url           = {https://arxiv.org/abs/2610.32205}
 }
 ```
 

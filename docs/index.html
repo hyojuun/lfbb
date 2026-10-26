@@ -57,8 +57,6 @@ a.btn:hover { background: var(--tint); border-color: var(--ink3); }
 .btn svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .btn.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
 a.btn.primary:hover { background: #343944; border-color: #343944; }
-.btn.off { color: var(--ink3); background: var(--tint); border-style: dashed; }
-.btn small { font: 500 10.5px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; margin-left: 1px; }
 .byline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 28px; max-width: 760px; margin: 2.2rem auto 0; padding: 14px 0 15px; border-top: 1px solid var(--rule2); border-bottom: 1px solid var(--rule); font: 15px/1.55 var(--sans); }
 .byline dt { font: 500 11.5px/1.4 var(--sans); text-transform: uppercase; letter-spacing: .09em; color: var(--ink3); margin: 0 0 5px; }
 .byline dd { margin: 0; }
@@ -211,15 +209,16 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     <h1>Watermarking Diffusion Language Models with Learned Foresight and Balanced Bands</h1>
     <p class="dek">Diffusion language models often commit a token before the tokens that select its green list, and the token later shapes its neighbors' green lists. We learn the two components that green-red watermarks for these models keep fixed, and count evidence the way the detector does.</p>
     <nav class="links" aria-label="Paper links">
-      <a class="btn primary" href="https://github.com/hyojuun/lfbb"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 4 1.5 8l4 4M10.5 4l4 4-4 4"/></svg>Code</a>
-      <span class="btn off" aria-disabled="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13"/></svg>arXiv <small>soon</small></span>
+      <a class="btn primary" href="https://arxiv.org/pdf/2610.32205"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M9.5 1.5V5H13"/></svg>Paper</a>
+      <a class="btn" href="https://arxiv.org/abs/2610.32205"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h9v11h-9zM5.5 5.5h5M5.5 8h5M5.5 10.5h3"/></svg>arXiv</a>
+      <a class="btn" href="https://github.com/hyojuun/lfbb"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 4 1.5 8l4 4M10.5 4l4 4-4 4"/></svg>Code</a>
       <a class="btn" href="#cite"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></svg>BibTeX</a>
     </nav>
   </div>
   <dl class="byline">
     <div><dt>Authors</dt><dd>Hyojun Kim<br>Hyeseon An<br>Yo-Sub Han</dd></div>
     <div><dt>Affiliation</dt><dd>Yonsei University</dd></div>
-    <div><dt>Status</dt><dd>Preprint, 2026</dd></div>
+    <div><dt>Preprint</dt><dd><a href="https://arxiv.org/abs/2610.32205">arXiv:2610.32205</a><br>October 2026</dd></div>
   </dl>
 
   <div class="demo" id="example">
@@ -431,11 +430,14 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     <div class="bib">
       <button type="button" class="copy" id="copy">Copy</button>
 <pre id="bibtex">@misc{kim2026watermarking,
-  title  = {Watermarking Diffusion Language Models with
-            Learned Foresight and Balanced Bands},
-  author = {Hyojun Kim and Hyeseon An and Yo-Sub Han},
-  year   = {2026},
-  note   = {Preprint}
+  title         = {Watermarking Diffusion Language Models with
+                   Learned Foresight and Balanced Bands},
+  author        = {Hyojun Kim and Hyeseon An and Yo-Sub Han},
+  year          = {2026},
+  eprint        = {2610.32205},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  url           = {https://arxiv.org/abs/2610.32205}
 }</pre>
     </div>
   </div>
