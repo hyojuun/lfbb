@@ -77,6 +77,14 @@ We keep the idea of tilting each commit toward green evidence and learn both of 
 
 Detection needs only the text, the key and the band table. It never runs the language model or the predictor.
 
+<p align="center">
+  <img src="assets/method.gif" width="92%" alt="Five commits of the watermarked response in which the tilt wrote a different token than the same random draw writes without the watermark, each with its candidates, their probabilities before and after the tilt, their chance of being green, and the next two tokens the predictor expects.">
+  <br><sub>The tilt at work on the response above. At each commit where the tilt wrote a different token than the same random draw
+  writes without the watermark, the panel lists the candidates with the model's probability, the probability after the tilt, the chance
+  that the token is green where it lands, and the next two tokens that the predictor expects once it is placed. The
+  <a href="https://hyojuun.github.io/lfbb/#at-work">project page</a> steps through every such commit.</sub>
+</p>
+
 ## Results
 
 WaterBench-600 with LLaDA-8B-Instruct (low-confidence order, 256 tokens, temperature 0.5). TPR uses thresholds calibrated on 600
