@@ -37,7 +37,7 @@ html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 18.5px/1.65 var(--serif); font-optical-sizing: auto; text-rendering: optimizeLegibility; }
 a { color: var(--blue); text-decoration: underline; text-decoration-color: rgba(44, 91, 160, .32); text-underline-offset: 2px; }
 a:hover { text-decoration-color: var(--blue); }
-.wrap { max-width: 1096px; margin: 0 auto; padding: 0 24px; }
+.wrap { max-width: 1096px; margin: 0 auto; padding-inline: 24px; }
 .col { max-width: 760px; margin-left: auto; margin-right: auto; }
 p { margin: 0 0 1.05em; }
 h1 { font: 600 2.6rem/1.12 var(--serif); letter-spacing: -.012em; margin: 0 0 .5em; text-wrap: balance; }
@@ -62,7 +62,14 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .byline dd { margin: 0; }
 
 /* demo */
-.demo { max-width: 1000px; margin: 2.4rem auto 0; border: 1px solid var(--rule2); border-radius: 3px; background: var(--paper); }
+.demo { position: relative; max-width: 1000px; margin: 2.4rem auto 0; border: 1px solid var(--rule2); border-radius: 3px; background: var(--paper); }
+.beam { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 3; }
+.beam .ray { fill: none; stroke: var(--blue); stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(44, 91, 160, .65)); }
+.beam .spark { fill: #fff; stroke: var(--blue); stroke-width: 2.5; filter: drop-shadow(0 0 6px rgba(44, 91, 160, .9)); }
+.sparks { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
+.sparks i { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; background: var(--blue); clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); animation: fly 1s cubic-bezier(.2, .7, .3, 1) forwards; }
+.sparks i.gold { background: #e3a92c; }
+@keyframes fly { from { transform: translate(0, 0) scale(.3); opacity: 1; } 60% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.15) rotate(60deg); opacity: 0; } }
 .ex-tabs { display: flex; flex-wrap: wrap; gap: 0 20px; padding: 8px 16px 0; border-bottom: 1px solid var(--rule); font: 500 14px/1.4 var(--sans); }
 .ex-tabs button { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 6px 0 8px; color: var(--ink3); cursor: pointer; }
 .ex-tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
@@ -81,8 +88,9 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .mbar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #7cc49a; border-radius: 2px 0 0 2px; transition: width .15s linear; }
 .mbar b { position: absolute; top: -4px; bottom: -4px; left: 25%; border-left: 1.5px dashed var(--ink2); }
 .canvas { font: 14px/1.85 var(--sans); white-space: pre-wrap; word-break: break-word; color: var(--ink); min-height: 200px; }
-.canvas .m { display: inline-block; width: 1.05em; height: .82em; margin: 0 .1em; border-radius: 2px; background: var(--mask); vertical-align: -.05em; }
-.canvas .t { border-radius: 2px; transition: background-color .45s, color .45s; }
+.canvas .m { display: inline-block; width: 1.05em; height: .82em; margin: 0 .1em; border-radius: 2px; background: var(--mask); vertical-align: -.05em; transition: opacity .35s; }
+.canvas .t { border-radius: 2px; transition: background-color .45s, color .45s, opacity .35s; }
+.cmp.spot .canvas > :not(.focus) { opacity: .32; }
 .canvas .t.pend { background: #e9ecf1; color: var(--ink2); }
 .canvas .t.fresh { background: var(--fresh); color: var(--ink); transition: none; }
 .canvas .t.g { background: var(--green-bg); color: var(--green-ink); }
@@ -95,12 +103,15 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .key i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
 .canvas .t.tilt { box-shadow: inset 0 -2px 0 var(--blue); }
 .canvas .t.focus { outline: 2px solid var(--blue); outline-offset: 1px; }
-.canvas .m.focus { background: var(--blue-bg); outline: 2px solid var(--blue); outline-offset: 1px; animation: think .8s ease-in-out infinite alternate; }
-@keyframes think { to { background: #c6d6ee; } }
+.canvas .m.focus { background: var(--blue-bg); outline: 2px solid var(--blue); outline-offset: 1px; box-shadow: 0 0 10px 3px rgba(44, 91, 160, .45); animation: think .8s ease-in-out infinite alternate; }
+@keyframes think { to { background: #c6d6ee; box-shadow: 0 0 18px 7px rgba(44, 91, 160, .6); } }
+.canvas .t.born { animation: born 1.1s ease-out; }
+@keyframes born { from { box-shadow: inset 0 -2px 0 var(--blue), 0 0 0 0 rgba(44, 91, 160, .6), 0 0 20px 9px rgba(227, 169, 44, .6); } to { box-shadow: inset 0 -2px 0 var(--blue), 0 0 0 10px rgba(44, 91, 160, 0), 0 0 0 0 rgba(227, 169, 44, 0); } }
 .why { border-top: 1px solid var(--rule); padding: 12px 16px 13px; background: #fbfcfd; min-height: 12.5em; }
-.why-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; margin-bottom: 2px; font: 600 14.5px/1.45 var(--sans); color: var(--ink); }
-.why-h span { font: 500 12px/1.4 var(--mono); color: var(--ink3); }
-.why-steps { display: flex; flex-wrap: wrap; gap: 4px 8px; margin: 4px 0 6px; padding: 0; list-style: none; counter-reset: step; font: 500 12.5px/1.5 var(--sans); color: var(--ink3); }
+.why-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 12px; }
+.why-at { font: 500 12px/1.4 var(--mono); color: var(--ink3); }
+.why-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; margin: 2px 0 6px; font: 600 14.5px/1.45 var(--sans); color: var(--ink); }
+.why-steps { display: flex; flex-wrap: wrap; gap: 4px 8px; margin: 0; padding: 0; list-style: none; counter-reset: step; font: 500 12.5px/1.5 var(--sans); color: var(--ink3); }
 .why-steps li { counter-increment: step; display: inline-flex; align-items: center; gap: 6px; }
 .why-steps li::before { content: counter(step); display: inline-grid; place-items: center; width: 18px; height: 18px; border: 1.5px solid var(--rule2); border-radius: 50%; font: 600 10.5px/1 var(--mono); }
 .why-steps li:not(:last-child)::after { content: "→"; margin-left: 2px; color: var(--rule2); }
@@ -108,11 +119,13 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .why-steps li.done::before { border-color: var(--blue); color: var(--blue); }
 .why-steps li.now { color: var(--blue); font-weight: 600; }
 .why-steps li.now::before { background: var(--blue); border-color: var(--blue); color: #fff; }
-.why-ctx { margin: 0 0 6px; font: 14.5px/2 var(--sans); color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+.why-ctx { margin: 0; font: 14.5px/2 var(--sans); color: var(--ink); white-space: pre-wrap; word-break: break-word; }
 .why-ctx .m, .why-ctx .nx { display: inline-block; width: 1.05em; height: .82em; margin: 0 .1em; border-radius: 2px; background: var(--mask); vertical-align: -.05em; }
 .why-ctx .nx { outline: 1.5px dashed var(--ink3); outline-offset: 1px; }
 .why-ctx .nxw { text-decoration: underline dashed var(--ink3); text-underline-offset: 4px; }
 .why-ctx .slot { display: inline-block; margin: 0 .15em; padding: 0 .4em; border: 2px solid var(--blue); border-radius: 3px; color: var(--blue); font: 600 13px/1.6 var(--mono); vertical-align: .05em; }
+.why-ctx .slot.lit { animation: lit-j 1s ease-out; }
+@keyframes lit-j { from { background: var(--blue-bg); box-shadow: 0 0 0 0 rgba(44, 91, 160, .7), 0 0 18px 7px rgba(44, 91, 160, .6); } to { box-shadow: 0 0 0 10px rgba(44, 91, 160, 0), 0 0 0 0 rgba(44, 91, 160, 0); } }
 .why-row { display: grid; grid-template-columns: 7.2em minmax(0, 1fr) 3.9em 5.2em 5.6em minmax(0, 1.6fr) 4.4em 4.2em; gap: 0 10px; align-items: center; padding: 5px 0; font: 13.5px/1.35 var(--sans); color: var(--ink2); }
 .why-row.h { padding: 4px 0 2px; font: 500 11px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .07em; color: var(--ink3); }
 .why-row.ours { background: var(--blue-bg); margin: 0 -8px; padding: 5px 8px; border-radius: 3px; }
@@ -157,7 +170,6 @@ figcaption b, .cap b { color: var(--ink); font-weight: 600; }
 
 /* abstract */
 .abstract { font-size: 1.03rem; color: var(--ink2); }
-.label { font: 500 11.5px/1 var(--sans); text-transform: uppercase; letter-spacing: .09em; color: var(--ink3); margin: 0 0 .9em; }
 
 /* equations */
 .eq { margin: 1.1em 0 1.25em; font-size: 1.05rem; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
@@ -241,13 +253,13 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   .mini .row { grid-template-columns: 112px 1fr 40px; }
 }
 @media (max-width: 440px) {
-  .wrap { padding: 0 16px; }
+  .wrap { padding-inline: 16px; }
   .eq { font-size: .8rem; }
   .byline { grid-template-columns: 1fr; gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .canvas .t { transition: none; }
-  .canvas .m.focus, .why .wait::after, .why .new .v { animation: none; }
+  .canvas .m, .canvas .t { transition: none; }
+  .canvas .m.focus, .canvas .t.born, .why .wait::after, .why .new .v, .why-ctx .slot.lit, .sparks i { animation: none; }
 }
 
 /* the tilt at work */
@@ -322,7 +334,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     <div class="ex-tabs" id="tabs" role="group" aria-label="Example prompts"></div>
     <p class="prompt"><span class="task" id="task">ELI5</span><span id="qtext"></span></p>
     <div class="demo-bar"><span>Same prompt and random seed, decoded by LLaDA-8B-Instruct</span><button type="button" class="replay" id="replay">Replay decoding</button></div>
-    <div class="cmp">
+    <div class="cmp" id="cmp">
       <div class="side">
         <div class="side-head"><span>No watermark</span><span class="chip" id="v-none"></span></div>
         <div class="meter"><div class="mbar"><i id="mg-none"></i><b title="share expected without a watermark"></b></div><span id="mt-none"></span></div>
@@ -336,14 +348,16 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     </div>
     <div class="why" id="why" aria-live="polite"></div>
     <div class="demo-foot"><div><span class="key"><i style="background:var(--mask)"></i>masked</span><span class="key"><i style="background:#e9ecf1"></i>committed, context still masked</span><span class="key"><i style="background:var(--green-bg)"></i>green unit</span><span class="key"><i style="background:var(--red-bg)"></i>red unit</span><span class="key" style="text-decoration:line-through;color:#9aa0aa">repeated, not counted</span><span class="key"><i style="background:none;box-shadow:inset 0 -2px 0 var(--blue)"></i>written by the tilt</span></div><div id="step"></div></div>
+    <svg class="beam" id="beam" aria-hidden="true"></svg>
+    <div class="sparks" id="sparks" aria-hidden="true"></div>
   </div>
-  <p class="cap col"><b>The same prompt decoded with and without the watermark.</b> Tokens appear in the order in which LLaDA-8B-Instruct commits them, in blocks of 32, and the replay shows the first two blocks of each response. Each token forms a unit with its two preceding tokens, and the unit turns green or red only once both of them are fixed, so a token committed before its context stays grey until then. The meters count the distinct units shown, as the detector does, and the dashed line marks the green share expected without a watermark (25%). The z-scores and verdicts are those of the full responses. Tokens underlined in blue are those where the tilt wrote a different token than the same random draw writes without the watermark. The replay stops at two of them and fills in the panel under the responses in the order of the computation. The panel first gives the model's probability of each candidate, then its band in the learned partition (shaded green once the key picks that band for the context) and its chance of being green where it lands, then the next two tokens that the foresight predictor expects once it is placed, and finally its score and its probability after the tilt. <a href="#at-work">The tilt at work</a> below steps through every such commit of the full responses.</p>
+  <p class="cap col"><b>The same prompt decoded with and without the watermark.</b> Tokens appear in the order in which LLaDA-8B-Instruct commits them, in blocks of 32, and the replay shows the first two blocks of each response. Each token forms a unit with its two preceding tokens, and the unit turns green or red only once both of them are fixed, so a token committed before its context stays grey until then. The meters count the distinct units shown, as the detector does, and the dashed line marks the green share expected without a watermark (25%). The z-scores and verdicts are those of the full responses. Tokens underlined in blue are those where the tilt wrote a different token than the same random draw writes without the watermark. The replay stops at two of them. The position lights up, a line links it to the panel under the responses, and the panel fills in the order of the computation, first with the model's probability of each candidate, then its band in the learned partition (shaded green once the key picks that band for the context) and its chance of being green where it lands, then the next two tokens that the foresight predictor expects once it is placed, and finally its score and its probability after the tilt. The token is written once the panel is complete. <a href="#at-work">The tilt at work</a> below steps through every such commit of the full responses.</p>
 </header>
 
 <main>
 <section class="wrap" id="abstract">
   <div class="col">
-    <p class="label">Abstract</p>
+    <h2>Abstract</h2>
     <p class="abstract">Green-red watermarks favor tokens from a green list that a secret key derives from the preceding tokens. Diffusion language models, however, often choose a token before its preceding tokens, and the token later shapes its neighbors' green lists. Prior work therefore tilts each choice to raise the expected number of green tokens at its own and its neighbors' positions. Building on this objective, we first learn two components that prior work keeps fixed: vocabulary bands that serve as green lists, separate competing candidates and keep the null distribution exact, and a foresight predictor that estimates how each candidate shifts its neighbors' predictions. Second, we count green tokens as the detector does, once per distinct context-token pair, so repetition earns nothing. On WaterBench with LLaDA-8B-Instruct, each learned component raises the z-score at equal distortion, and their gains are nearly additive. With a strong watermark, ours detects at least 96% of responses at a 1% false-positive rate while matching the LLM-judge score of unwatermarked text. Ours also detects more responses on Dream and as many or more on code and question answering without a significant loss in task accuracy.</p>
   </div>
 </section>
@@ -686,8 +700,9 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     "The foresight predictor estimates the masked one of the next two tokens once each candidate is placed, and how likely both are to be green on average.",
     "The next two tokens are already committed, and whether they are green depends on the candidate before them."];
   // the panel of change ch at stage n of its computation: the model's probabilities (1), each candidate's band and its chance of being
-  // green where it lands (2), its next two tokens once placed (3), and its score with the tilted probability (4). Stage 0 is the empty
-  // panel before the first pause. With λ = ½ and two scored neighbors, the score is (green here − γ) + (mean of the next two − γ)
+  // green where it lands (2), its next two tokens once placed (3), and its score with the tilted probability (4). Stage 0 is the moment
+  // the tilt reaches the position, and stage −1 the empty panel before the first pause. With λ = ½ and two scored neighbors, the score
+  // is (green here − γ) + (mean of the next two − γ)
   function whyHTML(k, ch, n = 4, title) {
     const at = committedAt(k, ch.s), { o, z } = reasonOf(ch), G = 0.25;
     const stat = (v) => '<span class="stat">' + v + "</span>";
@@ -706,19 +721,61 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     const wide = '<div class="why-row h"><span></span>' + cols.map(([h]) => "<span>" + head(h) + "</span>").join("") + "</div>" +
       [[z, "No watermark", "orig"], [o, "Ours", "ours"]].map(([c, who, cls]) => '<div class="why-row ' + cls + '"><span class="who">' + who + "</span>" + cols.map((q) => cell(q, c)).join("") + "</div>").join("");
     const narrow = '<div class="why-t"><span></span><span class="who">No watermark</span><span class="who ours">Ours</span>' + cols.map((q) => '<span class="lab">' + q[0] + "</span>" + cell(q, z) + cell(q, o)).join("") + "</div>";
-    const note = n === 0 ? "The replay stops at two of the tokens underlined in blue, where the tilt writes a different token than the same random draw writes without the watermark, and computes each of them step by step."
+    const note = n < 0 ? "The replay stops at two of the tokens underlined in blue, where the tilt writes a different token than the same random draw writes without the watermark, and computes each of them step by step."
+      : n === 0 ? "The tilt reaches position j and scores its candidates before the commit."
       : n === 1 ? "The model's probabilities given the text so far, for the tokens that the same random draw writes without and with the tilt."
       : n === 2 ? keyOf(ch, at) + "Only a candidate in that band is green here."
       : n === 3 ? NEXT[[ch.pos + 1, ch.pos + 2].filter((q) => q in at).length].replace("The foresight predictor estimates", ch.predictor ? "The foresight predictor estimates" : "The current beliefs give")
       : verdictOf(ch, at);
-    const h = n === 0 ? "How the tilt picks a token" : n < 4 ? "Scoring the candidates for this position" : title || "The tilt changes this token";
-    return '<div class="why-in' + (n === 0 ? " idle" : "") + '"><div class="why-h">' + h + "<span>" + (n ? "step " + (ch.s + 1) + " · position " + (ch.pos + 1) : "") + "</span></div>" +
-      '<ol class="why-steps">' + STEPS.map((x, m) => '<li class="' + (m + 1 < n ? "done" : m + 1 === n ? "now" : "") + '">' + x + "</li>").join("") + "</ol>" +
-      '<p class="why-ctx">' + ctxHTML(ch, at, 9, 2) + "</p>" + wide + narrow + '<p class="why-v">' + note + "</p></div>";
+    const h = n < 0 ? "How the tilt picks a token" : n < 4 ? "Scoring the candidates for this position" : title || "The tilt changes this token";
+    return '<div class="why-in' + (n < 0 ? " idle" : "") + '"><div class="why-top"><p class="why-ctx">' + ctxHTML(ch, at, 9, 2) + '</p><span class="why-at">' +
+      (n < 0 ? "" : "step " + (ch.s + 1) + " · position " + (ch.pos + 1)) + '</span></div><div class="why-h">' + h + '<ol class="why-steps">' +
+      STEPS.map((x, m) => '<li class="' + (m + 1 < n ? "done" : m + 1 === n ? "now" : "") + '">' + x + "</li>").join("") + "</ol></div>" + wide + narrow + '<p class="why-v">' + note + "</p></div>";
   }
+  // the box of a token, or of its word when a leading space stays at the end of the line before
+  const box = (el) => { const rs = [...el.getClientRects()]; return rs.length ? rs.reduce((a, b) => (b.width > a.width ? b : a)) : el.getBoundingClientRect(); };
+  // the ray from a position in our response to j in the panel, over the demo. `drawn` is the share of it drawn from the position down,
+  // and `at` puts a spark on it (0 at the position, 1 at j)
+  function ray(slot, drawn = 1, at = null) {
+    const svg = $("beam"), j = slot && $("why").querySelector(".why-ctx .slot");
+    st.ray = j ? slot : null;
+    if (!j) { svg.innerHTML = ""; return; }
+    const d = $("example").getBoundingClientRect(), a = box(slot), b = j.getBoundingClientRect();
+    const x1 = a.left + a.width / 2 - d.left, y1 = a.bottom - d.top + 3, x2 = b.left + b.width / 2 - d.left, y2 = b.top - d.top - 3, m = (y2 - y1) / 2;
+    svg.innerHTML = '<path class="ray" d="M' + x1 + " " + y1 + " C" + x1 + " " + (y1 + m) + " " + x2 + " " + (y2 - m) + " " + x2 + " " + y2 + '"/>';
+    const r = svg.firstChild, L = r.getTotalLength();
+    r.style.strokeDasharray = L + " " + L; r.style.strokeDashoffset = L * (1 - drawn);
+    if (at !== null) { const q = r.getPointAtLength(L * at); svg.insertAdjacentHTML("beforeend", '<circle class="spark" r="4.5" cx="' + q.x + '" cy="' + q.y + '"/>'); }
+  }
+  // a spark that runs along the ray from a to b, drawing the ray behind it when `grow` is set
+  function run(slot, a, b, grow, dur, then) {
+    cancelAnimationFrame(st.raf);
+    const t0 = performance.now();
+    const go = (t) => {
+      const e = 1 - Math.pow(1 - Math.min(1, (t - t0) / dur), 3), x = a + (b - a) * e;
+      ray(slot, grow ? x : 1, e < 1 ? x : null);
+      if (e < 1) st.raf = requestAnimationFrame(go); else if (then) then();
+    };
+    st.raf = requestAnimationFrame(go);
+  }
+  // sparks that fly out of a token as it is written
+  function sparkle(slot) {
+    const out = $("sparks"), d = $("example").getBoundingClientRect(), a = box(slot);
+    out.innerHTML = "";
+    for (let n = 0; n < 7; n++) {
+      const i = document.createElement("i"), t = (n / 7) * 2 * Math.PI + 0.3, r = 1 + (n % 2) * 0.45;
+      i.className = n % 3 === 1 ? "gold" : "";
+      i.style.cssText = "left:" + (a.left + a.width / 2 - d.left).toFixed(1) + "px;top:" + (a.top + a.height / 2 - d.top).toFixed(1) + "px;--dx:" +
+        (Math.cos(t) * (a.width / 2 + 14) * r).toFixed(1) + "px;--dy:" + (Math.sin(t) * 20 * r).toFixed(1) + "px";
+      out.appendChild(i);
+    }
+    clearTimeout(st.sp); st.sp = setTimeout(() => { out.innerHTML = ""; }, 1100);
+  }
+  addEventListener("resize", () => { if (st.ray) ray(st.ray); });
   // the state after the first i commits of example k, with the panel of the change at step `card` at stage n (no card: the waiting panel).
-  // Before stage 4 that change is not committed yet (i = card), at stage 4 it is (i = card + 1)
-  function frame(k, i, card, n = 4, focus = true) {
+  // Before the commit (i = card) the position is lit, after it (i = card + 1) the token is written. A focused card dims the rest and
+  // links the position to the panel. fx shapes the ray for still frames: `drawn`, `at` (see ray), `lit` (the flash at j), `born` (sparks)
+  function frame(k, i, card, n = 4, focus = true, fx = {}) {
     const ex = DATA.examples[k]; header(ex);
     const S = ARMS.map(([arm, key]) => setup(arm, key, ex.arms[arm])), ours = S[1];
     const N = Math.max(...S.map((x) => x.end)), chg = new Map(changesOf(k).filter((c) => c.pos < SHOW).map((c) => [c.s, c]));
@@ -726,8 +783,17 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     for (let q = 0; q < Math.min(i, N); q++) { const c = chg.get(q); if (c) ours.slots[c.pos].classList.add("tilt"); }
     S.forEach((x) => meter(x, i >= N));
     $("step").innerHTML = i && i < N ? 'step <span class="stat">' + i + " / " + N + "</span>" : "";
-    const c = card == null ? null : chg.get(card), P = pausesOf(k);
-    if (c) { if (focus) ours.slots[c.pos].classList.add("focus"); $("why").innerHTML = whyHTML(k, c, n); } else $("why").innerHTML = P.length ? whyHTML(k, P[0], 0) : "";
+    const c = card == null ? null : chg.get(card), P = pausesOf(k), lit = c && focus;
+    $("why").innerHTML = c ? whyHTML(k, c, n) : P.length ? whyHTML(k, P[0], -1) : "";
+    $("cmp").classList.toggle("spot", !!lit);
+    $("sparks").innerHTML = "";
+    if (lit) {
+      const slot = ours.slots[c.pos];
+      slot.classList.add("focus");
+      ray(slot, fx.drawn ?? 1, fx.at ?? null);
+      if (fx.lit) $("why").querySelector(".why-ctx .slot").classList.add("lit");
+      if (fx.born) { slot.classList.add("born"); sparkle(slot); }
+    } else ray(null);
     return { S, ours, N, chg, pauses: P.map((x) => x.s) };
   }
   // fixes the heights of both responses and of the panel at their largest over the replay of example k, so that nothing moves
@@ -736,21 +802,27 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     els.forEach((e) => { e.style.minHeight = ""; });
     const f = frame(k, Infinity, null), hc = Math.max(h(els[0]), h(els[1]));
     let hw = h(els[2]);
-    for (const s of f.pauses) for (let n = 1; n <= 4; n++) { els[2].innerHTML = whyHTML(k, f.chg.get(s), n); hw = Math.max(hw, h(els[2])); }
+    for (const s of f.pauses) for (let n = 0; n <= 4; n++) { els[2].innerHTML = whyHTML(k, f.chg.get(s), n); hw = Math.max(hw, h(els[2])); }
     els[0].style.minHeight = els[1].style.minHeight = hc + "px"; els[2].style.minHeight = hw + "px";
     st.fit = k;
   }
-  window.lfbbFrame = (k, i, card, n, focus) => { clearTimeout(st.timer); if (st.io) st.io.disconnect(); if (st.fit !== k) fit(k); return frame(k, i, card, n, focus !== false).pauses; };
-  const TICK = 70, STAGE = [1000, 1300, 1300, 3800];
+  window.lfbbFrame = (k, i, card, n, focus, fx) => {
+    clearTimeout(st.timer); cancelAnimationFrame(st.raf); if (st.io) st.io.disconnect();
+    if (st.fit !== k) fit(k);
+    return frame(k, i, card, n, focus !== false, fx || {}).pauses;
+  };
+  // how long each part of a pause stays: the ray running down, stages 1 to 3, stage 4 before the result runs back up, the run back up,
+  // and the written token
+  const TICK = 70, ARRIVE = 1400, STAGE = [2000, 2300, 2300], BACK = 1300, UP = 550, HOLD = 3000;
   function draw(animate) {
-    clearTimeout(st.timer);
+    clearTimeout(st.timer); cancelAnimationFrame(st.raf);
     const k = st.ex; fit(k);
     if (!animate || reduce) {
       const f = frame(k, Infinity, null), P = pausesOf(k);
-      if (P.length) { f.ours.slots[P[0].pos].classList.add("focus"); $("why").innerHTML = whyHTML(k, P[0], 4, "One of the " + f.chg.size + " tokens the tilt wrote in these 64"); }
+      if (P.length) { $("why").innerHTML = whyHTML(k, P[0], 4, "One of the " + f.chg.size + " tokens the tilt wrote in these 64"); f.ours.slots[P[0].pos].classList.add("focus"); ray(f.ours.slots[P[0].pos]); }
       return;
     }
-    const f = frame(k, 0, null), hold = new Set(f.pauses);
+    const f = frame(k, 0, null), hold = new Set(f.pauses), later = (fn, ms) => { st.timer = setTimeout(fn, ms); };
     let i = 0;
     const advance = () => {
       for (const x of f.S) if (i < x.end) commit(x, i, true);
@@ -760,19 +832,33 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
       f.S.forEach((x) => meter(x, i >= f.N));
       $("step").innerHTML = i < f.N ? 'step <span class="stat">' + i + " / " + f.N + "</span>" : "";
     };
-    // a pause walks through the four stages of the commit at step i and makes the commit at the last one
-    const pause = (n) => {
+    // a pause lights the position and runs a ray down to the panel, fills the panel stage by stage, then sends the result back up the
+    // ray and writes the token
+    const pause = () => {
       const c = f.chg.get(i), slot = f.ours.slots[c.pos];
-      if (n === 4) advance();
-      slot.classList.add("focus");
+      slot.classList.add("focus"); $("cmp").classList.add("spot");
+      $("why").innerHTML = whyHTML(k, c, 0);
+      run(slot, 0, 1, true, 800, () => { const j = $("why").querySelector(".why-ctx .slot"); if (j) j.classList.add("lit"); });
+      later(() => stage(c, 1), ARRIVE);
+    };
+    const stage = (c, n) => {
       $("why").innerHTML = whyHTML(k, c, n);
-      st.timer = setTimeout(() => { if (n < 4) pause(n + 1); else { slot.classList.remove("focus"); tick(); } }, STAGE[n - 1]);
+      if (n < 4) return later(() => stage(c, n + 1), STAGE[n - 1]);
+      later(() => {
+        run(f.ours.slots[c.pos], 1, 0, false, UP);
+        later(() => {
+          advance();
+          const s = f.ours.slots[c.pos];
+          s.classList.add("focus", "born"); ray(s); sparkle(s);
+          later(() => { s.classList.remove("focus", "born"); $("cmp").classList.remove("spot"); ray(null); tick(); }, HOLD);
+        }, UP + 20);
+      }, BACK);
     };
     const tick = () => {
       if (i >= f.N) return;
-      if (hold.has(i)) return pause(1);
+      if (hold.has(i)) return pause();
       advance();
-      st.timer = setTimeout(tick, TICK);
+      later(tick, TICK);
     };
     tick();
   }
