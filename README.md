@@ -10,15 +10,16 @@ Yonsei University
 [![License: MIT](https://img.shields.io/badge/license-MIT-3c9a62.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-4a4a4a.svg)
 
-<img src="assets/demo.gif" width="100%" alt="The same prompt decoded by LLaDA-8B-Instruct without a watermark and with ours, token by token in commit order. Tokens the tilt wrote are underlined in blue, and at four of them the replay stops to show each candidate's band, its probability before and after the tilt, its chance of being green, and the next two tokens the predictor expects. Without the watermark 23% of the units are green and z = -0.53, with it 47% and z = 7.09.">
+<img src="assets/demo.gif" width="100%" alt="The first 64 tokens of the same prompt decoded by LLaDA-8B-Instruct without a watermark and with ours, token by token in commit order. Tokens the tilt wrote are underlined in blue, and at two of them the replay stops and fills in the commit step by step, with the model's probabilities, each candidate's band and chance of being green, the next two tokens the predictor expects, and the score and the tilted probability. In these 64 tokens 28% of the units are green without the watermark and 56% with it, and the full responses have z = -0.53 and z = 7.09.">
 
-<sub>The same prompt and random seed, decoded by LLaDA-8B-Instruct without a watermark and with ours (δ = 4). Tokens appear in the order
-in which the model commits them, and each token forms a unit with its two preceding tokens. Tokens underlined in blue are those where
-the tilt wrote a different token than the same random draw writes without the watermark. The replay stops at four of them and shows why,
-with each candidate's band (shaded green when the key picks it for the context), its probability before and after the tilt, its chance of
-being green where it lands, and the next two tokens that the foresight predictor expects once it is placed. By chance about a quarter of
-the units are green, and the watermark raises that share to 47%, a z-score of 7.1. The <a href="https://hyojuun.github.io/lfbb/">project
-page</a> replays three prompts.</sub>
+<sub>The same prompt and random seed, decoded by LLaDA-8B-Instruct without a watermark and with ours (δ = 4), shown for the first 64
+tokens of each response. Tokens appear in the order in which the model commits them, and each token forms a unit with its two preceding
+tokens. Tokens underlined in blue are those where the tilt wrote a different token than the same random draw writes without the
+watermark. The replay stops at two of them and fills in the commit in the order of the computation, first the model's probability of each
+candidate, then its band (shaded green when the key picks it for the context) and its chance of being green where it lands, then the
+next two tokens that the foresight predictor expects once it is placed, and finally its score and its probability after the tilt. By
+chance about a quarter of the units are green. In these 64 tokens the watermark raises that share to 56%, and the full response reaches a
+z-score of 7.1. The <a href="https://hyojuun.github.io/lfbb/">project page</a> replays three prompts.</sub>
 
 </div>
 
