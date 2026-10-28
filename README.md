@@ -22,20 +22,20 @@ page</a> replays three prompts.</sub>
 
 </div>
 
-**TL;DR** Diffusion language models do not write left to right, so a green-red watermark often has to choose a token before it knows
-which tokens are green. We learn the two parts that existing watermarks for these models keep fixed, which tokens compete for the same
-green list and how a token changes its neighbors, and detect up to 18 points more responses at the same strength while matching the
-quality of unwatermarked text.
+**TL;DR** Diffusion language models do not write strictly left to right, so a green-red watermark often has to choose a token
+before it knows which tokens are green. We learn the two parts that existing watermarks for these models keep fixed, which tokens share
+a green list and how a token changes its neighbors. Ours detects up to 13 points more responses than DLM-KGW at low strengths,
+averaged over five keys, and keeps the judge score of unwatermarked text at high strengths.
 
 ## News
 
-- **2026-10-23** The paper is on [arXiv](https://arxiv.org/abs/2610.32205).
+- **2026-10-26** The paper is on [arXiv](https://arxiv.org/abs/2610.32205).
 - **2026-10-22** Code and [project page](https://hyojuun.github.io/lfbb/) released.
 
 ## Why diffusion language models are hard to watermark
 
 A green-red watermark picks each token's green list from the tokens before it. An autoregressive model writes left to right, so those
-tokens are always fixed when it picks a token. A diffusion language model does not write left to right. It starts from a fully masked
+tokens are always fixed when it picks a token. A diffusion language model does not write strictly left to right. It starts from a fully masked
 response and commits tokens over many steps, in an order that its sampler chooses. LLaDA-8B-Instruct in its default low-confidence order
 commits 39% of its tokens while at least one of the two preceding positions is still masked, and Dream-v0-Instruct-7B in its random
 order 66%. The watermark therefore has to choose a token before it knows which list is green, and the token it chooses also decides the
@@ -87,7 +87,7 @@ writes without the watermark. The [project page](https://hyojuun.github.io/lfbb/
 
 WaterBench-600 with LLaDA-8B-Instruct (low-confidence order, 256 tokens, temperature 0.5). TPR uses thresholds calibrated on 600
 unwatermarked responses detected under 100 keys, log-perplexity is measured with Qwen3-8B, and the judge, Gemma-4-12B-it, rates style
-and consistency from 1 to 10. Loops is the share of responses with a repetition loop. Baselines run from their official code.
+and consistency from 1 to 10. Rep. is the share of responses with a repetition loop. Baselines run from their official code.
 
 <p align="center">
   <img src="assets/frontier.png" width="56%" alt="TPR at 1% FPR against log-perplexity for ours, DLM-KGW and dgMARK, with the strength in the markers. Ours lies above DLM-KGW at delta 2 and 3.">
@@ -95,7 +95,7 @@ and consistency from 1 to 10. Loops is the share of responses with a repetition 
   is hardest.</sub>
 </p>
 
-| Method | δ | TPR@1% ↑ | TPR@0.1% ↑ | log-PPL ↓ | Judge ↑ | Loops (%) ↓ |
+| Method | δ | TPR@1% ↑ | TPR@0.1% ↑ | log-PPL ↓ | Judge ↑ | Rep. (%) ↓ |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
 | No watermark | – | – | – | 1.297 | 9.12 | 19.3 |
 | dgMARK (greedy) | – | 92.7 | 84.2 | 1.550 | 9.07 | 16.2 |
@@ -117,7 +117,8 @@ and consistency from 1 to 10. Loops is the share of responses with a repetition 
 - **Each component helps, and their gains add up.** Learned bands raise the mean z-score by 0.41 to 0.47 at every strength and the
   predictor by 0.10 to 0.28 with either partition. Together they reach the same mean z-score with 30% and 22% less KL at δ = 2 and 3.
 - **Beyond one model and one task.** LLaDA's bands transferred to Dream detect 75.5% of the responses at δ = 4 against 56.5% for
-  DLM-KGW, and on code and question answering ours detects as many or more without a significant loss in accuracy.
+  DLM-KGW (nominal TPR@1%), mostly because 44% of the DLM-KGW responses are too short to carry a signal, against 13% of ours. On code
+  and question answering ours detects as many or more without a significant loss in accuracy.
 
 <p align="center">
   <img src="assets/components.png" width="100%" alt="Gains of learned bands only, the predictor only and both, in mean z-score at equal KL, KL saved at equal mean z-score and log-perplexity at equal TPR.">
@@ -240,8 +241,9 @@ python scripts/reproduce.py configs/reproduce/components.json
    the bands (`learn_bands.py`, with four bands, or eight for the band-count comparison on the development prompts).
 3. **Decision states.** The training prompts are decoded again with the watermark, and at every uncertain commit each of the top-8
    candidates is placed and the generator re-run, which records the exact post-placement beliefs of its neighbors (`collect_states.py`).
-4. **Predictor.** Copies of the generator's top eight layers and an adapter are distilled on these states, keeping the epoch with the
-   lowest loss on held-out training prompts (`train_predictor.py`).
+4. **Predictor.** Copies of the generator's top eight layers and an adapter are distilled on these states (`train_predictor.py`,
+   which keeps the epoch with the lowest loss on held-out training prompts and saves every epoch). The paper uses the checkpoint after
+   the fourth epoch.
 
 </details>
 
