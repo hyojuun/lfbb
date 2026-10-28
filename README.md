@@ -10,12 +10,15 @@ Yonsei University
 [![License: MIT](https://img.shields.io/badge/license-MIT-3c9a62.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-4a4a4a.svg)
 
-<img src="assets/demo.gif" width="100%" alt="The same prompt decoded by LLaDA-8B-Instruct without a watermark and with ours, token by token in commit order. Without it, 23% of the units are green and z = -0.53. With it, 47% are green and z = 7.09.">
+<img src="assets/demo.gif" width="100%" alt="The same prompt decoded by LLaDA-8B-Instruct without a watermark and with ours, token by token in commit order. Tokens the tilt wrote are underlined in blue, and at four of them the replay stops to show each candidate's band, its probability before and after the tilt, its chance of being green, and the next two tokens the predictor expects. Without the watermark 23% of the units are green and z = -0.53, with it 47% and z = 7.09.">
 
 <sub>The same prompt and random seed, decoded by LLaDA-8B-Instruct without a watermark and with ours (δ = 4). Tokens appear in the order
-in which the model commits them. Each token forms a unit with its two preceding tokens, so it stays grey until both are fixed, and the
-detector counts every distinct unit once. By chance about a quarter of the units are green, and the watermark raises that share to 47%, a
-z-score of 7.1. The <a href="https://hyojuun.github.io/lfbb/">project page</a> replays the decoding for three prompts.</sub>
+in which the model commits them, and each token forms a unit with its two preceding tokens. Tokens underlined in blue are those where
+the tilt wrote a different token than the same random draw writes without the watermark. The replay stops at four of them and shows why,
+with each candidate's band (shaded green when the key picks it for the context), its probability before and after the tilt, its chance of
+being green where it lands, and the next two tokens that the foresight predictor expects once it is placed. By chance about a quarter of
+the units are green, and the watermark raises that share to 47%, a z-score of 7.1. The <a href="https://hyojuun.github.io/lfbb/">project
+page</a> replays three prompts.</sub>
 
 </div>
 
@@ -77,14 +80,8 @@ We keep the idea of tilting each commit toward green evidence and learn both of 
 
 Detection needs only the text, the key and the band table. It never runs the language model or the predictor.
 
-<p align="center">
-  <img src="assets/method.gif" width="92%" alt="Five commits of the watermarked response in which the tilt wrote a different token than the same random draw writes without the watermark, each with its candidates, their probabilities before and after the tilt, their chance of being green, and the next two tokens the predictor expects.">
-  <br><sub>The tilt at work on the response above. At each commit where the tilt wrote a different token than the same random draw
-  writes without the watermark, the panel lists the candidates with the model's probability, the probability after the tilt, their band
-  (shaded green when the key picks it for this context) and chance of being green where they land, and the next two tokens that the
-  predictor expects once each is placed. The <a href="https://hyojuun.github.io/lfbb/#at-work">project page</a> steps through every such
-  commit.</sub>
-</p>
+The demo at the top shows the tilt at work: it stops at four commits in which the tilt wrote a different token than the same random draw
+writes without the watermark. The [project page](https://hyojuun.github.io/lfbb/#at-work) steps through every such commit.
 
 ## Results
 

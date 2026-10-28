@@ -93,6 +93,32 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .stat { font-family: var(--mono); color: var(--ink); }
 .key { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; }
 .key i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+.canvas .t.tilt { box-shadow: inset 0 -2px 0 var(--blue); }
+.canvas .t.focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+.why { border-top: 1px solid var(--rule); padding: 12px 16px 13px; background: #fbfcfd; min-height: 12.5em; }
+.why-lead { margin: 0; font: 14px/1.55 var(--sans); color: var(--ink3); }
+.why-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; margin-bottom: 2px; font: 600 14.5px/1.45 var(--sans); color: var(--ink); }
+.why-h span { font: 500 12px/1.4 var(--mono); color: var(--ink3); }
+.why-ctx { margin: 0 0 6px; font: 14.5px/2 var(--sans); color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+.why-ctx .m, .why-ctx .nx { display: inline-block; width: 1.05em; height: .82em; margin: 0 .1em; border-radius: 2px; background: var(--mask); vertical-align: -.05em; }
+.why-ctx .nx { outline: 1.5px dashed var(--ink3); outline-offset: 1px; }
+.why-ctx .nxw { text-decoration: underline dashed var(--ink3); text-underline-offset: 4px; }
+.why-ctx .slot { display: inline-block; margin: 0 .15em; padding: 0 .4em; border: 2px solid var(--blue); border-radius: 3px; color: var(--blue); font: 600 13px/1.6 var(--mono); vertical-align: .05em; }
+.why-row { display: grid; grid-template-columns: 7.6em minmax(0, 1fr) 5.4em 10em 7em minmax(0, 1.5fr); gap: 0 12px; align-items: center; padding: 5px 0; font: 13.5px/1.35 var(--sans); color: var(--ink2); }
+.why-row.h { padding: 4px 0 2px; font: 500 11px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .07em; color: var(--ink3); }
+.why-row.ours { background: var(--blue-bg); margin: 0 -8px; padding: 5px 8px; border-radius: 3px; }
+.why-row .who { font: 600 12.5px/1.3 var(--sans); color: var(--ink2); }
+.why-row.ours .who { color: var(--blue); }
+.why-row .bd { font: 500 11.5px/1 var(--sans); padding: 3px 6px 4px; border-radius: 10px; background: #edf0f3; color: var(--ink2); white-space: nowrap; }
+.why-row .bd.on { background: var(--green-bg); color: var(--green-ink); }
+.why-v { margin: 7px 0 0; font: 14px/1.55 var(--sans); color: var(--ink2); }
+@media (max-width: 640px) {
+  .why-row.h { display: none; }
+  .why { min-height: 0; }
+  .why-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5px 12px; }
+  .why-row .who { grid-column: 1 / -1; }
+  .why-row > [data-label]::before { content: attr(data-label); display: block; font: 500 10.5px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .07em; color: var(--ink3); margin-bottom: 2px; }
+}
 @media (max-width: 760px) {
   .cmp { grid-template-columns: minmax(0, 1fr); }
   .side + .side { border-left: 0; border-top: 1px solid var(--rule); }
@@ -186,7 +212,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   h2 { font-size: 1.4rem; }
   .dek { font-size: 1.12rem; }
   .byline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .canvas { height: 260px; font-size: 13px; padding: 14px; }
+  .canvas { min-height: 0; font-size: 13px; padding: 14px; }
   .order { grid-template-columns: 1fr; gap: 6px; }
   .order .lab { margin-top: 6px; }
   section { padding-top: 2.4rem; }
@@ -285,9 +311,10 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
         <div class="canvas" id="c-ours"></div>
       </div>
     </div>
-    <div class="demo-foot"><div><span class="key"><i style="background:var(--mask)"></i>masked</span><span class="key"><i style="background:#e9ecf1"></i>committed, context still masked</span><span class="key"><i style="background:var(--green-bg)"></i>green unit</span><span class="key"><i style="background:var(--red-bg)"></i>red unit</span><span class="key" style="text-decoration:line-through;color:#9aa0aa">repeated, not counted</span></div><div id="step"></div></div>
+    <div class="why" id="why" aria-live="polite"></div>
+    <div class="demo-foot"><div><span class="key"><i style="background:var(--mask)"></i>masked</span><span class="key"><i style="background:#e9ecf1"></i>committed, context still masked</span><span class="key"><i style="background:var(--green-bg)"></i>green unit</span><span class="key"><i style="background:var(--red-bg)"></i>red unit</span><span class="key" style="text-decoration:line-through;color:#9aa0aa">repeated, not counted</span><span class="key"><i style="background:none;box-shadow:inset 0 -2px 0 var(--blue)"></i>written by the tilt</span></div><div id="step"></div></div>
   </div>
-  <p class="cap col"><b>The same prompt decoded with and without the watermark.</b> Tokens appear in the order in which LLaDA-8B-Instruct commits them, in blocks of 32. Each token forms a unit with its two preceding tokens, and the unit turns green or red only once both of them are fixed, so a token committed before its context stays grey until then. The meters count distinct units as the detector does, and the dashed line marks the green share expected without a watermark (25%). <a href="#at-work">The tilt at work</a> below shows why the watermark changed the tokens it changed.</p>
+  <p class="cap col"><b>The same prompt decoded with and without the watermark.</b> Tokens appear in the order in which LLaDA-8B-Instruct commits them, in blocks of 32. Each token forms a unit with its two preceding tokens, and the unit turns green or red only once both of them are fixed, so a token committed before its context stays grey until then. The meters count distinct units as the detector does, and the dashed line marks the green share expected without a watermark (25%). Tokens underlined in blue are those where the tilt wrote a different token than the same random draw writes without the watermark. The replay stops at four of them, and the panel under the responses shows why: each candidate's band in the learned partition (shaded green once the key picks that band for the context), its probability before and after the tilt, its chance of being green where it lands, and the next two tokens that the foresight predictor expects once it is placed. <a href="#at-work">The tilt at work</a> below steps through all of them.</p>
 </header>
 
 <main>
@@ -368,7 +395,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
 <section class="wrap" id="at-work">
   <div class="col">
     <h2>The tilt at work on a real response</h2>
-    <p>The replay at the top shows what the watermark achieves, and this one shows what it does. It walks through the commits of our response in which the tilt wrote a different token than the same random draw writes without the watermark. For each candidate it lists the model's probability, the probability after the tilt, the chance that the token is green where it lands, and the two tokens that the model expects next once the candidate is placed.</p>
+    <p>The replay at the top stops at four of the commits in which the tilt wrote a different token than the same random draw writes without the watermark. This panel walks through all of them. For each candidate it lists the model's probability, the probability after the tilt, the chance that the token is green where it lands, and the two tokens that the model expects next once the candidate is placed.</p>
   </div>
   <div class="mx" id="mx">
     <div class="ex-tabs" id="mx-tabs" role="group" aria-label="Example prompts"></div>
@@ -517,7 +544,52 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
 <script>
 (() => {
   const DATA = JSON.parse(document.getElementById("demo-data").textContent);
+  const MD = JSON.parse(document.getElementById("method-data").textContent);
   const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const pct = (v) => Math.round(100 * v) + "%";
+  const shown = (t) => (t.includes("\n") && t.trim() === "" ? "↵" : t.trim() === "" ? "␣" : t.trim());
+  // the commits of our response in which the tilted draw differs from the same draw without the tilt
+  const changesOf = (k) => MD[k].changes.filter((c) => c.pos < DATA.examples[k].arms.ours_d4.n_gen);
+  const nextAvg = (c) => { const a = c && c.next ? c.next.filter(Boolean).map((n) => n[1]) : []; return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null; };
+  const reasonOf = (ch) => {
+    const o = ch.cands.find((c) => c.ours), z = ch.cands.find((c) => c.orig);
+    const on = nextAvg(o), zn = nextAvg(z);
+    return { o, z, on, zn, here: o.own - z.own > 0.05, next: on !== null && zn !== null && on - zn > 0.05, less: o.own - z.own < -0.05 };
+  };
+  // the text of our response as committed before step s
+  const committedAt = (k, s) => {
+    const piece = {}, at = {};
+    DATA.examples[k].arms.ours_d4.commits.forEach(([p, t]) => { piece[p] = t; });
+    for (let q = 0; q < s; q++) if (MD[k].order[q] in piece) at[MD[k].order[q]] = piece[MD[k].order[q]];
+    return at;
+  };
+  const ctxHTML = (ch, at, before, after) => {
+    let h = "";
+    for (let p = Math.max(0, ch.pos - before); p <= ch.pos + after; p++) {
+      const nx = p === ch.pos + 1 || p === ch.pos + 2;
+      if (p === ch.pos) h += '<span class="slot">j</span>';
+      else if (p in at) h += '<span class="' + (nx ? "nxw" : "") + '">' + esc(at[p]) + "</span>";
+      else h += '<span class="' + (nx ? "nx" : "m") + '"></span>';
+    }
+    return h;
+  };
+  const verdictOf = (ch, at) => {
+    const { o, z, on, zn, here, next, less } = reasonOf(ch);
+    const hs = "green here (" + pct(o.own) + " against " + pct(z.own) + ")";
+    const ns = "makes the next two tokens greener (" + pct(on) + " against " + pct(zn) + " on average)";
+    let why;
+    if (here && next) why = "which is more likely " + hs + " and " + ns;
+    else if (here) why = "which is more likely " + hs;
+    else if (less && next) why = "which is less likely " + hs + " but " + ns;
+    else if (next) why = "which " + ns;
+    else why = "which the tilt favors (" + pct(o.p) + " before, " + pct(o.q) + " after)";
+    const ctx = [ch.pos - 2, ch.pos - 1].every((q) => q in at) ? '<span class="tk">' + esc(shown(at[ch.pos - 2])) + " " + esc(shown(at[ch.pos - 1])) + "</span>" : null;
+    const key = ch.green ? (ctx ? "After " + ctx + ", the key makes band " + ch.green + " green. " : "Here the key makes band " + ch.green + " green. ")
+      : "Its context is still masked, so whether a token is green here is a probability over the model's beliefs about the context. ";
+    return key + 'Given the text so far, the same draw without the watermark writes <span class="tk">' + esc(shown(z.t)) + '</span>. The tilt writes <span class="tk">' + esc(shown(o.t)) + "</span>, " + why + ".";
+  };
+  const nextsHTML = (c) => (c.next ? c.next.map((n) => (n ? '<span class="' + (n[1] >= 0.5 ? "g" : "r") + '" title="green with probability ' + pct(n[1]) + '">' + esc(shown(n[0])) + "</span>" : "")).join("") : '<span class="x">not scored</span>');
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const st = { ex: 0, timer: null };
   const SHORT = ["Collapse of the Soviet Union", "Pitch and timbre", "Home loan after a divorce"];
@@ -562,24 +634,71 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
     v.className = "chip" + (fin && det ? " yes" : "");
     v.textContent = fin ? (det ? "detected at 1% FPR" : "not detected") : "decoding…";
   }
-  function draw(animate) {
-    clearInterval(st.timer);
-    const ex = DATA.examples[st.ex]; header(ex);
-    const S = ARMS.map(([arm, key]) => setup(arm, key, ex.arms[arm]));
-    const N = Math.max(...S.map((x) => x.a.commits.length));
-    if (!animate || reduce) {
-      S.forEach((x) => { for (let i = 0; i < x.a.commits.length; i++) commit(x, i, false); meter(x, true); });
-      $("step").textContent = ""; return;
+  // the replay stops at one change per quarter of the response, preferring changes that are green where they land and make the next two
+  // tokens greener, then those that use the predictor and whose context is fixed
+  const pausesOf = (k) => {
+    const all = changesOf(k), n = DATA.examples[k].arms.ours_d4.commits.length, out = [];
+    const score = (c) => { const r = reasonOf(c); return (r.here && r.next ? 3 : r.next ? 2 : r.here ? 1 : 0) + (c.predictor ? .5 : 0) + (c.green ? .25 : 0); };
+    for (let g = 0; g < 4; g++) {
+      const seg = all.filter((c) => c.s >= (g * n) / 4 && c.s < ((g + 1) * n) / 4 && score(c) >= 1).sort((a, b) => score(b) - score(a) || a.s - b.s);
+      if (seg.length) out.push(seg[0]);
     }
-    S.forEach((x) => meter(x, false));
-    let i = 0;
-    st.timer = setInterval(() => {
-      for (const x of S) if (i < x.a.commits.length) commit(x, i, true);
+    return out;
+  };
+  const LEAD = '<p class="why-lead">The replay stops where the tilt writes a different token than the same random draw writes without the watermark, and shows why.</p>';
+  function whyHTML(k, ch, title) {
+    const at = committedAt(k, ch.s), { o, z } = reasonOf(ch), n = DATA.examples[k].arms.ours_d4.commits.length;
+    const row = (c, who, cls) => '<div class="why-row ' + cls + '"><span class="who">' + who + '</span><span class="mx-tok" data-label="Token">' + esc(shown(c.t)) + "</span>" +
+      '<span data-label="Band"><span class="bd' + (ch.green && c.b === ch.green ? " on" : "") + '">band ' + c.b + "</span></span>" +
+      '<span data-label="Model → tilted"><span class="stat">' + pct(c.p) + '</span> → <span class="stat">' + pct(c.q) + "</span></span>" +
+      '<span data-label="Green here"><span class="stat">' + (c.special ? "special" : pct(c.own)) + "</span></span>" +
+      '<span class="mx-nexts" data-label="Next two, once placed">' + nextsHTML(c) + "</span></div>";
+    return '<div class="why-h">' + (title || "The tilt changes this token") + "<span>step " + (ch.s + 1) + " / " + n + " · position " + (ch.pos + 1) + "</span></div>" +
+      '<p class="why-ctx">' + ctxHTML(ch, at, 9, 2) + "</p>" +
+      '<div class="why-row h"><span></span><span>Token</span><span>Band</span><span>Model → tilted</span><span>Green here</span><span>Next two, once placed (' + (ch.predictor ? "predictor" : "current beliefs") + ")</span></div>" +
+      row(z, "No watermark", "orig") + row(o, "Ours", "ours") + '<p class="why-v">' + verdictOf(ch, at) + "</p>";
+  }
+  // the state after the first i commits of example k, with the why panel of the change at step `card` (null: the lead line)
+  function frame(k, i, card, focus = true) {
+    const ex = DATA.examples[k]; header(ex);
+    const S = ARMS.map(([arm, key]) => setup(arm, key, ex.arms[arm])), ours = S[1];
+    const N = Math.max(...S.map((x) => x.a.commits.length)), chg = new Map(changesOf(k).map((c) => [c.s, c]));
+    for (const x of S) for (let q = 0; q < Math.min(i, x.a.commits.length); q++) commit(x, q, false);
+    for (let q = 0; q < Math.min(i, N); q++) { const c = chg.get(q); if (c && ours.slots[c.pos]) ours.slots[c.pos].classList.add("tilt"); }
+    S.forEach((x) => meter(x, i >= x.a.commits.length));
+    $("step").innerHTML = i && i < N ? 'step <span class="stat">' + i + " / " + N + "</span>" : "";
+    const c = card === null ? null : chg.get(card);
+    if (c) { if (focus) ours.slots[c.pos].classList.add("focus"); $("why").innerHTML = whyHTML(k, c); } else $("why").innerHTML = LEAD;
+    return { S, ours, N, chg, pauses: pausesOf(k).map((x) => x.s) };
+  }
+  window.lfbbFrame = (k, i, card, focus) => { clearTimeout(st.timer); if (st.io) st.io.disconnect(); return frame(k, i, card, focus !== false).pauses; };
+  const TICK = 45, HOLD = 3800;
+  function draw(animate) {
+    clearTimeout(st.timer);
+    const k = st.ex;
+    if (!animate || reduce) {
+      const f = frame(k, Infinity, null), P = pausesOf(k);
+      if (P.length) { f.ours.slots[P[0].pos].classList.add("focus"); $("why").innerHTML = whyHTML(k, P[0], "One of the " + f.chg.size + " tokens the tilt wrote"); }
+      return;
+    }
+    const f = frame(k, 0, null), hold = new Set(f.pauses);
+    let i = 0, focus = null;
+    const tick = () => {
+      if (focus) { focus.classList.remove("focus"); focus = null; }
+      for (const x of f.S) if (i < x.a.commits.length) commit(x, i, true);
+      const c = f.chg.get(i);
+      if (c && f.ours.slots[c.pos]) f.ours.slots[c.pos].classList.add("tilt");
       i++;
-      S.forEach((x) => meter(x, i >= x.a.commits.length));
-      $("step").innerHTML = 'step <span class="stat">' + Math.min(i, N) + " / " + N + "</span>";
-      if (i >= N) clearInterval(st.timer);
-    }, 45);
+      f.S.forEach((x) => meter(x, i >= x.a.commits.length));
+      $("step").innerHTML = i < f.N ? 'step <span class="stat">' + i + " / " + f.N + "</span>" : "";
+      if (i >= f.N) return;
+      if (c && hold.has(c.s)) {
+        focus = f.ours.slots[c.pos]; focus.classList.add("focus");
+        $("why").innerHTML = whyHTML(k, c);
+        st.timer = setTimeout(tick, HOLD);
+      } else st.timer = setTimeout(tick, TICK);
+    };
+    tick();
   }
 
   // commit order of the first twelve tokens (example 1, ours)
@@ -594,7 +713,7 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
 
   // first frame: both finished responses, then decode once the panel is visible
   draw(false);
-  if ("IntersectionObserver" in window) new IntersectionObserver((es, o) => { if (es.some((e) => e.isIntersecting)) { o.disconnect(); draw(true); } }, { threshold: .35 }).observe($("c-ours"));
+  if ("IntersectionObserver" in window) { st.io = new IntersectionObserver((es, o) => { if (es.some((e) => e.isIntersecting)) { o.disconnect(); draw(true); } }, { threshold: .35 }); st.io.observe($("c-ours")); }
 
   // decision states (Table of examples in the paper's appendix)
   const DS = [
@@ -615,7 +734,6 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
       { at: ["This", .59], a: [["is", .86], ["procedure", .06]], b: [["is", .74], ["because", .21]] },
       { at: ["The", .40], a: [["diseased", .87], ["reason", .07]], b: [["kidney", .56], ["for", .27]] } ] },
   ];
-  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const bars = (list) => list.map(([w, p], i) => '<div class="pb' + (i === 0 ? " top" : "") + '"><span>' + esc(w) + '</span><span class="bar"><i style="width:' + (100 * p).toFixed(0) + '%"></i></span><span class="v">.' + String(Math.round(p * 100)).padStart(2, "0") + "</span></div>").join("");
   function drawDS(i) {
     const d = DS[i];
@@ -637,52 +755,21 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   drawDS(0);
 
   // the tilt at work: the commits where the tilt changed the token
-  const MD = JSON.parse(document.getElementById("method-data").textContent);
   const mx = { ex: 0, i: 0 };
-  const pct = (v) => Math.round(100 * v) + "%";
-  const shown = (t) => (t.includes("\n") && t.trim() === "" ? "↵" : t.trim() === "" ? "␣" : t.trim());
-  const changesOf = (k) => MD[k].changes.filter((c) => c.pos < DATA.examples[k].arms.ours_d4.n_gen);
   // open on the first change that uses the predictor and whose two preceding positions are already fixed; the earlier ones stay reachable
   const startOf = (k) => {
     const md = MD[k];
     const i = changesOf(k).findIndex((c) => { const done = new Set(md.order.slice(0, c.s)); return c.predictor && [c.pos - 1, c.pos - 2].every((q) => q < 0 || done.has(q)); });
     return Math.max(0, i);
   };
-  const nextAvg = (c) => { const a = c && c.next ? c.next.filter(Boolean).map((n) => n[1]) : []; return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null; };
-  const reasonOf = (ch) => {
-    const o = ch.cands.find((c) => c.ours), z = ch.cands.find((c) => c.orig);
-    const on = nextAvg(o), zn = nextAvg(z);
-    return { o, z, on, zn, here: o.own - z.own > 0.05, next: on !== null && zn !== null && on - zn > 0.05, less: o.own - z.own < -0.05 };
-  };
   function mxDraw() {
-    const ex = DATA.examples[mx.ex], md = MD[mx.ex], all = changesOf(mx.ex), ch = all[mx.i];
-    const piece = {}, at = {};
-    ex.arms.ours_d4.commits.forEach(([p, t]) => { piece[p] = t; });
-    for (let s = 0; s < ch.s; s++) if (md.order[s] in piece) at[md.order[s]] = piece[md.order[s]];
-    let h = "";
-    for (let p = Math.max(0, ch.pos - 10); p <= ch.pos + 4; p++) {
-      const nx = p === ch.pos + 1 || p === ch.pos + 2;
-      if (p === ch.pos) h += '<span class="slot">j</span>';
-      else if (p in at) h += '<span class="' + (nx ? "nxw" : "") + '">' + esc(at[p]) + "</span>";
-      else h += '<span class="' + (nx ? "nx" : "m") + '"></span>';
-    }
-    $("mx-ctx").innerHTML = h;
-    const { o, z, on, zn, here, next, less } = reasonOf(ch);
-    let why;
-    const hs = "green here (" + pct(o.own) + " against " + pct(z.own) + ")";
-    const ns = "makes the next two tokens greener (" + pct(on) + " against " + pct(zn) + " on average)";
-    if (here && next) why = "which is more likely " + hs + " and " + ns;
-    else if (here) why = "which is more likely " + hs;
-    else if (less && next) why = "which is less likely " + hs + " but " + ns;
-    else if (next) why = "which " + ns;
-    else why = "which the tilt favors (" + pct(o.p) + " before, " + pct(o.q) + " after)";
-    const ctx = [ch.pos - 2, ch.pos - 1].every((q) => q in at) ? '<span class="tk">' + esc(shown(at[ch.pos - 2])) + " " + esc(shown(at[ch.pos - 1])) + "</span>" : null;
-    const key = ch.green ? (ctx ? "After " + ctx + ", the key makes band " + ch.green + " green. " : "Here the key makes band " + ch.green + " green. ") : "";
-    $("mx-verdict").innerHTML = key + 'Given the text so far, the same draw without the watermark writes <span class="tk">' + esc(shown(z.t)) + '</span>. The tilt writes <span class="tk">' + esc(shown(o.t)) + "</span>, " + why + ".";
+    const ex = DATA.examples[mx.ex], all = changesOf(mx.ex), ch = all[mx.i], at = committedAt(mx.ex, ch.s);
+    $("mx-ctx").innerHTML = ctxHTML(ch, at, 10, 4);
+    $("mx-verdict").innerHTML = verdictOf(ch, at);
     let rows = '<div class="mx-row h"><div>Candidate</div><div>Model</div><div>After the tilt</div><div>Band &middot; green here</div><div>Next two, once placed (' + (ch.predictor ? "predictor" : "current beliefs") + ")</div></div>";
     for (const c of ch.cands) {
       const tags = (c.ours ? '<span class="mx-tag ours">ours</span>' : "") + (c.orig ? '<span class="mx-tag orig">no watermark</span>' : "");
-      const nexts = c.next ? c.next.map((n) => (n ? '<span class="' + (n[1] >= 0.5 ? "g" : "r") + '" title="green with probability ' + pct(n[1]) + '">' + esc(shown(n[0])) + "</span>" : "")).join("") : '<span class="x">not scored</span>';
+      const nexts = nextsHTML(c);
       rows += '<div class="mx-row' + (c.ours ? " ours" : "") + '"><div class="mx-c"><span class="mx-tok">' + esc(shown(c.t)) + "</span>" + tags + "</div>" +
         '<div class="mx-p" data-label="Model"><span class="bar"><i style="width:' + (100 * c.p).toFixed(1) + '%"></i></span><span class="v">' + pct(c.p) + "</span></div>" +
         '<div class="mx-p q" data-label="After the tilt"><span class="bar"><i style="width:' + (100 * c.q).toFixed(1) + '%"></i></span><span class="v">' + pct(c.q) + "</span></div>" +
