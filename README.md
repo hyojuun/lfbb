@@ -298,10 +298,6 @@ Each script documents its options and gives an example in its header (`python sc
 | `configs/reproduce/` | the commands of each result, run by `scripts/reproduce.py` |
 | `data/` | the training and development prompts, prompt id lists, special tokens |
 
-## Questions
-
-Questions and bug reports are welcome on the [issue tracker](https://github.com/hyojuun/lfbb/issues).
-
 ## Citation
 
 ```bibtex
