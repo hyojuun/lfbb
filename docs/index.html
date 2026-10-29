@@ -126,11 +126,17 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .why-ctx .slot { display: inline-block; margin: 0 .15em; padding: 0 .4em; border: 2px solid var(--blue); border-radius: 3px; color: var(--blue); font: 600 13px/1.6 var(--mono); vertical-align: .05em; }
 .why-ctx .slot.lit { animation: lit-j 1s ease-out; }
 @keyframes lit-j { from { background: var(--blue-bg); box-shadow: 0 0 0 0 rgba(44, 91, 160, .7), 0 0 18px 7px rgba(44, 91, 160, .6); } to { box-shadow: 0 0 0 10px rgba(44, 91, 160, 0), 0 0 0 0 rgba(44, 91, 160, 0); } }
-.why-row { display: grid; grid-template-columns: 7.2em minmax(0, 1fr) 3.9em 5.2em 5.6em minmax(0, 1.6fr) 4.4em 4.2em; gap: 0 10px; align-items: center; padding: 5px 0; font: 13.5px/1.35 var(--sans); color: var(--ink2); }
-.why-row.h { padding: 4px 0 2px; font: 500 11px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .07em; color: var(--ink3); }
-.why-row.ours { background: var(--blue-bg); margin: 0 -8px; padding: 5px 8px; border-radius: 3px; }
-.why-row .who { font: 600 12.5px/1.3 var(--sans); color: var(--ink2); }
-.why-row.ours .who { color: var(--blue); }
+.why-g { display: grid; grid-template-columns: 108px minmax(0, 19%) 68px 82px 96px minmax(0, 1fr) 76px 68px; align-items: center; margin-top: 2px; font: 13.5px/1.35 var(--sans); color: var(--ink2); font-variant-numeric: tabular-nums; }
+.why-g > span { min-width: 0; padding: 6px 8px; }
+.why-g .hd { align-self: end; padding: 2px 8px 5px; font: 500 11px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .07em; color: var(--ink3); white-space: nowrap; }
+.why-g .hd.wr { white-space: normal; }
+.why-g .rule { grid-area: 1 / 1 / 2 / -1; align-self: end; height: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.why-g .hl { grid-area: 3 / 1 / 4 / -1; align-self: stretch; padding: 0; background: var(--blue-bg); border-radius: 3px; }
+.why-g .who { font: 600 12.5px/1.3 var(--sans); color: var(--ink2); }
+.why-g .who.ours { color: var(--blue); }
+.why-g .r { text-align: right; } .why-g .c { text-align: center; }
+.why-g .wait::after { left: 8px; bottom: auto; top: 50%; margin-top: -.28em; }
+.why-g .r.wait::after { left: auto; right: 8px; } .why-g .c.wait::after { left: 50%; margin-left: -1.5em; }
 .why .bd { font: 500 11.5px/1 var(--sans); padding: 3px 6px 4px; border-radius: 10px; background: #edf0f3; color: var(--ink2); white-space: nowrap; }
 .why .bd.on { background: var(--green-bg); color: var(--green-ink); }
 .why .wait { position: relative; }
@@ -151,7 +157,7 @@ a.btn.primary:hover { background: #343944; border-color: #343944; }
 .why-v { margin: 7px 0 0; font: 14px/1.55 var(--sans); color: var(--ink2); }
 @media (max-width: 640px) {
   .why { min-height: 0; }
-  .why-row { display: none; }
+  .why-g { display: none; }
   .why-t { display: grid; }
 }
 @media (max-width: 760px) {
@@ -706,20 +712,25 @@ footer { border-top: 1px solid var(--rule); margin-top: 3rem; padding: 1.5rem 0 
   function whyHTML(k, ch, n = 4, title) {
     const at = committedAt(k, ch.s), { o, z } = reasonOf(ch), G = 0.25;
     const stat = (v) => '<span class="stat">' + v + "</span>";
+    // what the panel shows of each candidate: the stage that computes it, its value and its class (r and c align right and center)
     const cols = [
       ["Token", 1, (c) => esc(shown(c.t)), "mx-tok"],
-      ["Model", 1, (c) => stat(pct(c.p))],
-      ["Band", 2, (c) => '<span class="bd' + (ch.green && c.b === ch.green ? " on" : "") + '">band ' + c.b + "</span>"],
-      ["Green here", 2, (c) => stat(pct(c.own))],
+      ["Model", 1, (c) => stat(pct(c.p)), "r"],
+      ["Band", 2, (c) => '<span class="bd' + (ch.green && c.b === ch.green ? " on" : "") + '">band ' + c.b + "</span>", "c"],
+      ["Green here", 2, (c) => stat(pct(c.own)), "r"],
       ["Next two", 3, (c) => nextsHTML(c) + stat(pct(nextAvg(c))), "nxt"],
-      ["Score", 4, (c) => stat(sgn(c.own - G + nextAvg(c) - G))],
-      ["Tilted", 4, (c) => stat(pct(c.q))],
+      ["Score", 4, (c) => stat(sgn(c.own - G + nextAvg(c) - G)), "r"],
+      ["Tilted", 4, (c) => stat(pct(c.q)), "r"],
     ];
-    const cell = ([, m, f, cls], c) => '<span class="' + (cls || "") + (m > n ? " wait" : m === n ? " new" : "") + '"><span class="v">' + f(c) + "</span></span>";
+    const cell = ([, m, f, cls], c, attr = "") => '<span class="' + (cls || "") + (m > n ? " wait" : m === n ? " new" : "") + '"' + attr + '><span class="v">' + f(c) + "</span></span>";
     const head = (h) => (h === "Next two" ? "Next two, once placed (" + (ch.predictor ? "predictor" : "current beliefs") + ")" : h === "Score" ? '<span title="(green here − 25%) + (next two − 25%)">Score</span>' : h);
-    // one row per candidate on wide screens, one row per quantity on phones
-    const wide = '<div class="why-row h"><span></span>' + cols.map(([h]) => "<span>" + head(h) + "</span>").join("") + "</div>" +
-      [[z, "No watermark", "orig"], [o, "Ours", "ours"]].map(([c, who, cls]) => '<div class="why-row ' + cls + '"><span class="who">' + who + "</span>" + cols.map((q) => cell(q, c)).join("") + "</div>").join("");
+    // one row per candidate on wide screens, one row per quantity on phones. The wide layout is one grid, so every header sits over its
+    // values, and the highlight of our row is one rectangle behind it
+    const place = (r, c) => ' style="grid-area: ' + r + " / " + c + '"';
+    const wide = '<div class="why-g"><span class="rule"></span><span class="hl"></span>' +
+      cols.map(([h, , , cls], i) => '<span class="hd' + (cls === "r" || cls === "c" ? " " + cls : cls === "nxt" ? " wr" : "") + '"' + place(1, i + 2) + ">" + head(h) + "</span>").join("") +
+      [[z, "No watermark", ""], [o, "Ours", " ours"]].map(([c, who, cls], r) => '<span class="who' + cls + '"' + place(r + 2, 1) + ">" + who + "</span>" +
+        cols.map((q, i) => cell(q, c, place(r + 2, i + 2))).join("")).join("") + "</div>";
     const narrow = '<div class="why-t"><span></span><span class="who">No watermark</span><span class="who ours">Ours</span>' + cols.map((q) => '<span class="lab">' + q[0] + "</span>" + cell(q, z) + cell(q, o)).join("") + "</div>";
     const note = n < 0 ? "The replay stops at two of the tokens underlined in blue, where the tilt writes a different token than the same random draw writes without the watermark, and computes each of them step by step."
       : n === 0 ? "The tilt reaches position j and scores its candidates before the commit."
