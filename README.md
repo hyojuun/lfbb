@@ -97,18 +97,10 @@ and consistency from 1 to 10. Rep. is the share of responses with a repetition l
   is hardest.</sub>
 </p>
 
-| Method | δ | TPR@1% ↑ | TPR@0.1% ↑ | log-PPL ↓ | Judge ↑ | Rep. (%) ↓ |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|
-| No watermark | – | – | – | 1.297 | 9.12 | 19.3 |
-| dgMARK (greedy) | – | 92.7 | 84.2 | 1.550 | 9.07 | 16.2 |
-| DLM-KGW | 2 | 51.3 | 24.8 | **1.316** | 9.13 | 19.3 |
-| **Ours** | 2 | **69.5** | **44.0** | 1.326 | **9.29** | **18.2** |
-| DLM-KGW | 3 | 85.7 | 70.0 | **1.387** | 8.97 | 23.3 |
-| **Ours** | 3 | **89.3** | **79.3** | 1.398 | **9.30** | **14.0** |
-| DLM-KGW | 4 | 96.0 | 91.3 | 1.506 | 8.62 | 26.3 |
-| **Ours** | 4 | **96.2** | **92.7** | **1.469** | **9.32** | **14.3** |
-| DLM-KGW | 5 | 97.7 | 95.3 | 1.602 | 8.15 | 30.5 |
-| **Ours** | 5 | **98.3** | **96.0** | **1.575** | **9.26** | **12.2** |
+<p align="center">
+  <img src="assets/table1.png" width="70%" alt="Table 1 of the paper. At delta 2, 3, 4 and 5, ours detects 69.5, 89.3, 96.2 and 98.3% of the responses at 1% FPR against 51.3, 85.7, 96.0 and 97.7% for DLM-KGW, and the judge rates ours 9.29 to 9.32 against 9.13, 8.97, 8.62 and 8.15 for DLM-KGW. Without a watermark the judge gives 9.12, and dgMARK detects about 92% at 1% FPR.">
+  <br><sub>Table 1 of the paper. Bold marks the better of DLM-KGW and ours at the same δ.</sub>
+</p>
 
 - **More detections where it is hardest.** At low strengths the quality cost is smallest but detection is uncertain. Averaged over five
   keys on 300 prompts, ours detects 12.7 and 4.5 points more responses than DLM-KGW at 1% FPR at δ = 2 and 3, with no significant
